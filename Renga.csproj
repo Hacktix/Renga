@@ -9,6 +9,7 @@
     <SignAssembly>False</SignAssembly>
     <ErrorReport>none</ErrorReport>
     <ApplicationIcon>Resources\RengaIcon.ico</ApplicationIcon>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
