@@ -27,9 +27,25 @@ namespace Renga.Config
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(confText);
         }
 
+
+
         public T GetProperty<T>(string key)
         {
             return (T)_config[key];
+        }
+
+        public void SetProperty<T>(string key, T value)
+        {
+            _config[key] = value;
+            SaveSettings();
+        }
+
+
+
+        private void SaveSettings()
+        {
+            string confText = JsonConvert.SerializeObject(_config);
+            File.WriteAllText("settings.json", confText);
         }
     }
 }
