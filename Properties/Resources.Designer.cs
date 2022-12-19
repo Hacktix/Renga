@@ -62,12 +62,22 @@ namespace Renga.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to {
-        ///	&quot;a&quot;:  1
+        ///
         ///}.
         /// </summary>
         internal static string DefaultConfig {
             get {
                 return ResourceManager.GetString("DefaultConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] RengaIcon {
+            get {
+                object obj = ResourceManager.GetObject("RengaIcon", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }
