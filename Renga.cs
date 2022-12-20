@@ -3,6 +3,7 @@ using Chroma.Graphics;
 using Chroma.Windowing.DragDrop;
 using Renga.Core;
 using Renga.Config;
+using Chroma.Diagnostics;
 
 namespace Renga
 {
@@ -33,6 +34,23 @@ namespace Renga
         {
             string path = e.Files[0];
             InitializeEmulator(path);
+        }
+
+
+
+        protected override void Update(float delta)
+        {
+            base.Update(delta);
+            UpdateWindowTitle();
+        }
+
+
+
+        private void UpdateWindowTitle()
+        {
+            string gameTitle = _emu == null ? "No game loaded" : _emu.Memory.Cartridge.Title;
+            string windowTitle = $"れんが - {gameTitle} ({(int)PerformanceCounter.FPS} FPS)";
+            Window.Title = windowTitle;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Renga.Core.ROM
     {
         public byte[] Data;
         public string Title {
-            get { return Encoding.ASCII.GetString(Data.Skip(0x0134).Take(16).ToArray()); }
+            get { return Encoding.ASCII.GetString(Data.Skip(0x0134).Take(16).Where((byte b) => b != 0).ToArray()); }
         }
         public CGBCompatibility CGBCompatibility {
             get {
