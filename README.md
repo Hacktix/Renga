@@ -8,5 +8,17 @@
 - [ ] Full Sound Emulation
 - [ ] Gameboy Color Support
 - [ ] Improved User Interface
+  - [ ] Custom Start Screen
+  - [ ] Toolbar Options
+  - [ ] Graphical Settings Interface
 - [ ] Customizability & Accessibility Options
+  - [ ] Localization Options
+  - [ ] Color Customization
+  - [ ] Shader Effects
+  - [ ] TAS Tools
+  - [ ] Scripting Engine
 - [ ] Developer Tools
+  - [ ] VRAM Viewer
+  - [ ] Memory Editor
+  - [ ] Sound Visualizer
+  - [ ] Debugging Tools
