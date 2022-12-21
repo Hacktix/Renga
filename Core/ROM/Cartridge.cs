@@ -21,10 +21,46 @@ namespace Renga.Core.ROM
         {
             get { return Data[0x146] == 0x03; }
         }
+        public int ROMSize
+        {
+            get { return 0x8000 * (1 << Data[0x148]); }
+        }
+        public int RAMSize
+        {
+            get
+            {
+                switch(Data[0x149])
+                {
+                    case 2: return 0x2000;
+                    case 3: return 0x8000;
+                    case 4: return 0x20000;
+                    case 5: return 0x10000;
+                    default: return 0;
+                }
+            }
+        }
+        public int Version
+        {
+            get { return Data[0x14C]; }
+        }
+        public byte HeaderChecksum
+        {
+            get { return Data[0x14D]; }
+        }
+        public ushort GlobalChecksum
+        {
+            get { return (ushort)(Data[0x14E] + (Data[0x14F] << 8)); }
+        }
+
         public MBC MBC;
+
 
         public Cartridge(byte[] data) {
             Data = data;
+
+            if (data.Length != ROMSize)
+                throw new InvalidDataException($"Invalid ROM File: Header indicates {ROMSize} bytes, actual size is {data.Length}");
+
             switch(data[0x147])
             {
                 case 0x00: MBC = new ROM(this); break;
