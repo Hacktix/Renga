@@ -9,7 +9,7 @@ namespace Renga
 {
     public class Renga : Game
     {
-        private RengaConfig _conf = new RengaConfig();
+        public static RengaConfig Config = new RengaConfig();
         private Emulator _emu;
 
         public Renga() : base(new(true, false))

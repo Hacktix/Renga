@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Renga.Config
 {
-    internal class RengaConfig
+    public class RengaConfig
     {
         private Dictionary<string, object> _config;
 
@@ -29,8 +29,13 @@ namespace Renga.Config
 
 
 
-        public T GetProperty<T>(string key)
+        public T GetProperty<T>(string key, T defaultValue)
         {
+            if(!_config.Keys.Contains(key))
+            {
+                SetProperty(key, defaultValue);
+                return defaultValue;
+            }
             return (T)_config[key];
         }
 
