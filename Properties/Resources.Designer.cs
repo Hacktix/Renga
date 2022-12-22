@@ -61,6 +61,16 @@ namespace Renga.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] BootromDMG {
+            get {
+                object obj = ResourceManager.GetObject("BootromDMG", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {
         ///
         ///}.

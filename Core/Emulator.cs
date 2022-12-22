@@ -7,7 +7,7 @@
 
         public Emulator(string romPath) {
             byte[] romContents = File.ReadAllBytes(romPath);
-            Memory = new MemoryBus(romContents);
+            Memory = new MemoryBus(romContents, Properties.Resources.BootromDMG);
             CPU = new CPU(Memory);
         }
     }

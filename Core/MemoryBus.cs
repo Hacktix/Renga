@@ -1,4 +1,5 @@
 ﻿using Renga.Core.ROM;
+using System.Runtime.CompilerServices;
 
 namespace Renga.Core
 {
@@ -8,14 +9,28 @@ namespace Renga.Core
         public WRAM WRAM;
         public HRAM HRAM;
 
-        public MemoryBus(byte[] rom) {
+        public byte[] Bootrom = new byte[0x100];
+        public bool OverlayBootrom;
+
+        public MemoryBus(byte[] rom)
+        {
             Cartridge = new Cartridge(rom);
             WRAM = new WRAM();
             HRAM = new HRAM();
+            OverlayBootrom = false;
+        }
+
+        public MemoryBus(byte[] rom, byte[] bootrom) : this(rom)
+        {
+            OverlayBootrom = true;
+            Bootrom = bootrom;
         }
 
         public byte Read(ushort addr)
         {
+            if(OverlayBootrom && addr < 0x100)
+                return Bootrom[addr];
+
             if (addr < 0x8000) return Cartridge.MBC.Read(addr);
             if (addr < 0xA000) throw new NotImplementedException($"Read from unimplemented VRAM address 0x{addr:X4}");
             if (addr < 0xC000) return Cartridge.MBC.Read(addr);
@@ -29,8 +44,20 @@ namespace Renga.Core
             throw new NotImplementedException("Read from unimplemented IE Register");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadMMIO(ushort addr)
+        {
+            switch(addr)
+            {
+                default: throw new NotImplementedException($"Read from unimplemented I/O Register 0x{addr:X4}");
+            }
+        }
+
         public void Write(ushort addr, byte val)
         {
+            if (OverlayBootrom && addr < 0x100)
+                return;
+
             if (addr < 0x8000) { Cartridge.MBC.Write(addr, val); return; }
             if (addr < 0xA000) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented VRAM address 0x{addr:X4}");
             if (addr < 0xC000) { Cartridge.MBC.Write(addr, val); return; }
@@ -42,6 +69,19 @@ namespace Renga.Core
             if (addr < 0xFFFE) { HRAM.Write(addr, val); return; }
 
             throw new NotImplementedException("Write 0x{val:X2} to unimplemented IE Register");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteMMIO(ushort addr, byte val)
+        {
+            switch(addr)
+            {
+                case 0xFF50:
+                    if ((val & 1) != 0)
+                        OverlayBootrom = false;
+                    break;
+                default: throw new NotImplementedException($"Write 0x{val:X2} to unimplemented I/O Register 0x{addr:X4}");
+            }
         }
     }
 }
