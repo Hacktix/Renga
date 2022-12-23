@@ -434,6 +434,18 @@ namespace Renga.Core
             };
             #endregion
 
+            #region Stack Ops
+            _opcodeMap[0xC5] = () => EnqueueInstructionOperations(() => { }, () => Memory.Write(--SP, B), () => Memory.Write(--SP, C));
+            _opcodeMap[0xD5] = () => EnqueueInstructionOperations(() => { }, () => Memory.Write(--SP, D), () => Memory.Write(--SP, E));
+            _opcodeMap[0xE5] = () => EnqueueInstructionOperations(() => { }, () => Memory.Write(--SP, H), () => Memory.Write(--SP, L));
+            _opcodeMap[0xF5] = () => EnqueueInstructionOperations(() => { }, () => Memory.Write(--SP, A), () => Memory.Write(--SP, F));
+
+            _opcodeMap[0xC1] = () => EnqueueInstructionOperations(() => C = Memory.Read(SP++), () => B = Memory.Read(SP++));
+            _opcodeMap[0xD1] = () => EnqueueInstructionOperations(() => D = Memory.Read(SP++), () => E = Memory.Read(SP++));
+            _opcodeMap[0xE1] = () => EnqueueInstructionOperations(() => H = Memory.Read(SP++), () => L = Memory.Read(SP++));
+            _opcodeMap[0xF1] = () => EnqueueInstructionOperations(() => A = Memory.Read(SP++), () => F = Memory.Read(SP++));
+            #endregion
+
             #region 8-bit ALU
             _opcodeMap[0x80] = () => { OperationALU8(ALUOperation.ADD, B); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x81] = () => { OperationALU8(ALUOperation.ADD, C); _actionQueue.Enqueue(FetchInstruction); };
