@@ -238,6 +238,18 @@ namespace Renga.Core
 
         private void InitializeOpcodeMaps()
         {
+            #region 16-bit Indirect Loads
+            _opcodeMap[0x02] = () => { _actionQueue.Enqueue(() => Memory.Write(BC, A)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x12] = () => { _actionQueue.Enqueue(() => Memory.Write(DE, A)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x22] = () => { _actionQueue.Enqueue(() => Memory.Write(HL++, A)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x32] = () => { _actionQueue.Enqueue(() => Memory.Write(HL--, A)); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x0A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(BC)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(DE)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(HL++)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x3A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(HL--)); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
             #region 16-bit Immediate Loads
             _opcodeMap[0x01] = () => {
                 EnqueueInstructionOperations(
