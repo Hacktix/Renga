@@ -277,6 +277,13 @@ namespace Renga.Core
             _opcodeMap[0x38] = () => { OperationJR(FlagC); };
             #endregion
 
+            #region MMIO Loads (LDH)
+            _opcodeMap[0xE0] = () => { byte off = 0; EnqueueInstructionOperations(() => off = FetchNextByte(), () => Memory.Write((ushort)(0xFF00+off), A)); };
+            _opcodeMap[0xF0] = () => { byte off = 0; EnqueueInstructionOperations(() => off = FetchNextByte(), () => A = Memory.Read((ushort)(0xFF00 + off))); };
+            _opcodeMap[0xE2] = () => EnqueueInstructionOperations(() => Memory.Write((ushort)(0xFF00 + C), A));
+            _opcodeMap[0xF2] = () => EnqueueInstructionOperations(() => A = Memory.Read((ushort)(0xFF00 + C)));
+            #endregion
+
             #region 8-bit Immediate Loads
             _opcodeMap[0x06] = () => { _actionQueue.Enqueue(() => B = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x0E] = () => { _actionQueue.Enqueue(() => C = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
