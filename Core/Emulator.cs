@@ -20,6 +20,8 @@
             Memory = useBootrom ? new MemoryBus(this, romContents, bootrom) : new MemoryBus(this, romContents);
             CPU = new CPU(Memory);
             PPU = new PPU();
+
+            TickFrame();
         }
 
         public void TickFrame()
