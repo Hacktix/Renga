@@ -15,7 +15,7 @@ namespace Renga
         public static RengaConfig Config = new RengaConfig();
         private Emulator? _emu;
 
-        private bool _error = false;
+        public static string? ErrorString;
 
         public Renga() : base(new(false, false))
         {
@@ -39,16 +39,16 @@ namespace Renga
 
         private void InitializeEmulator(string romPath)
         {
-            _error = false;
+            ErrorString = null;
             try
             {
                 _emu = new Emulator(romPath);
                 Window.Title = $"れんが - {_emu.Memory.Cartridge.Title}";
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 _emu = null;
-                _error = true;
+                ErrorString = $"Failed to initialize Emulator: {e.Message}";
             }
         }
 
@@ -70,13 +70,13 @@ namespace Renga
         {
             base.Draw(context);
 
-            if (_error)
-                context.DrawString("Oops! Renga crashed. Check the logs for details.", new Vector2(Window.Width/10, Window.Height/4), Color.Red);
+            if (ErrorString != null)
+                context.DrawString($"Oops, Renga crashed!\n\nError:\n{ErrorString}", new Vector2(10, 10), Color.Red);
 
             try { _emu?.TickFrame(); }
-            catch(Exception) {
+            catch(Exception e) {
                 _emu = null;
-                _error = true;
+                ErrorString = e.Message;
             }
         }
 

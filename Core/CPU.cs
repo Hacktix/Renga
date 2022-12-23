@@ -156,7 +156,7 @@ namespace Renga.Core
             catch (Exception)
             {
                 Renga.Log.Error($"Encountered unknown opcode ${opcode:X2} at memory address ${PC - 1:X4}");
-                throw new NotImplementedException();
+                throw new NotImplementedException($"Encountered unknown opcode ${opcode:X2} at memory address ${PC - 1:X4}");
             }
         }
 
@@ -170,7 +170,7 @@ namespace Renga.Core
             catch (Exception)
             {
                 Renga.Log.Error($"Encountered unknown 0xCB opcode ${opcode:X2} at memory address ${PC - 1:X4}");
-                throw new NotImplementedException();
+                throw new NotImplementedException($"Encountered unknown 0xCB opcode ${opcode:X2} at memory address ${PC - 1:X4}");
             }
         }
 
