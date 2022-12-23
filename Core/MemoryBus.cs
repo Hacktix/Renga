@@ -14,6 +14,8 @@ namespace Renga.Core
 
         private Emulator _emu;
 
+        private byte[] _mmio = new byte[0x80];
+
         public MemoryBus(Emulator emu, byte[] rom)
         {
             _emu = emu;
@@ -42,7 +44,7 @@ namespace Renga.Core
             if (addr < 0xFEA0) throw new NotImplementedException($"Read from unimplemented OAM address 0x{addr:X4}");
             if (addr < 0xFEA0) throw new NotImplementedException($"Read from unimplemented OAM address 0x{addr:X4}");
             if (addr < 0xFEFF) throw new NotImplementedException($"Read from unimplemented unusable address 0x{addr:X4}");
-            if (addr < 0xFF80) throw new NotImplementedException($"Read from unimplemented I/O Register 0x{addr:X4}");
+            if (addr < 0xFF80) return ReadMMIO(addr);
             if (addr < 0xFFFE) return HRAM.Read(addr);
 
             throw new NotImplementedException("Read from unimplemented IE Register");
@@ -53,7 +55,8 @@ namespace Renga.Core
         {
             switch(addr)
             {
-                default: throw new NotImplementedException($"Read from unimplemented I/O Register 0x{addr:X4}");
+                default:
+                    return _mmio[addr & 0x7F];
             }
         }
 
@@ -69,7 +72,7 @@ namespace Renga.Core
             if (addr < 0xFEA0) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented OAM address 0x{addr:X4}");
             if (addr < 0xFEA0) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented OAM address 0x{addr:X4}");
             if (addr < 0xFEFF) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented unusable address 0x{addr:X4}");
-            if (addr < 0xFF80) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented I/O Register 0x{addr:X4}");
+            if (addr < 0xFF80) { WriteMMIO(addr, val); return; }
             if (addr < 0xFFFE) { HRAM.Write(addr, val); return; }
 
             throw new NotImplementedException("Write 0x{val:X2} to unimplemented IE Register");
@@ -84,7 +87,9 @@ namespace Renga.Core
                     if ((val & 1) != 0)
                         OverlayBootrom = false;
                     break;
-                default: throw new NotImplementedException($"Write 0x{val:X2} to unimplemented I/O Register 0x{addr:X4}");
+                default:
+                    _mmio[addr & 0x7F] = val;
+                    break;
             }
         }
     }

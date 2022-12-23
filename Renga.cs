@@ -44,6 +44,14 @@ namespace Renga
             UpdateWindowTitle();
         }
 
+        protected override void Draw(RenderContext context)
+        {
+            base.Draw(context);
+
+            if(_emu !=  null)
+                _emu.TickFrame();
+        }
+
 
 
         private void UpdateWindowTitle()

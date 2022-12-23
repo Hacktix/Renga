@@ -277,6 +277,17 @@ namespace Renga.Core
             _opcodeMap[0x38] = () => { OperationJR(FlagC); };
             #endregion
 
+            #region 8-bit Immediate Loads
+            _opcodeMap[0x06] = () => { _actionQueue.Enqueue(() => B = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0E] = () => { _actionQueue.Enqueue(() => C = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x16] = () => { _actionQueue.Enqueue(() => D = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1E] = () => { _actionQueue.Enqueue(() => E = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x26] = () => { _actionQueue.Enqueue(() => H = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2E] = () => { _actionQueue.Enqueue(() => L = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x36] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = FetchNextByte(), () => Memory.Write(HL, tmp)); };
+            _opcodeMap[0x3E] = () => { _actionQueue.Enqueue(() => A = FetchNextByte()); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
             #region 16-bit Indirect Loads
             _opcodeMap[0x02] = () => { _actionQueue.Enqueue(() => Memory.Write(BC, A)); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x12] = () => { _actionQueue.Enqueue(() => Memory.Write(DE, A)); _actionQueue.Enqueue(FetchInstruction); };
