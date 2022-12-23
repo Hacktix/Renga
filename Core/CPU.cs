@@ -248,8 +248,35 @@ namespace Renga.Core
             FlagZ = (regValue & bitmask) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OperationJR(bool condition)
+        {
+            if(!condition)
+            {
+                _actionQueue.Enqueue(() => FetchNextByte());
+                _actionQueue.Enqueue(FetchInstruction);
+            } else
+            {
+                sbyte offset = 0;
+                EnqueueInstructionOperations(
+                    () => offset = (sbyte)FetchNextByte(),
+                    () => { },
+                    () => PC = (ushort)(PC + offset)
+                );
+            }
+            
+        }
+
         private void InitializeOpcodeMaps()
         {
+            #region Control Flow
+            _opcodeMap[0x18] = () => { OperationJR(true); };
+            _opcodeMap[0x20] = () => { OperationJR(!FlagZ); };
+            _opcodeMap[0x28] = () => { OperationJR(FlagZ); };
+            _opcodeMap[0x30] = () => { OperationJR(!FlagC); };
+            _opcodeMap[0x38] = () => { OperationJR(FlagC); };
+            #endregion
+
             #region 16-bit Indirect Loads
             _opcodeMap[0x02] = () => { _actionQueue.Enqueue(() => Memory.Write(BC, A)); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x12] = () => { _actionQueue.Enqueue(() => Memory.Write(DE, A)); _actionQueue.Enqueue(FetchInstruction); };
