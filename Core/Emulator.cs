@@ -4,8 +4,9 @@
     {
         public readonly MemoryBus Memory;
         public readonly CPU CPU;
+        public readonly PPU PPU;
 
-        public static readonly int TicksPerFrame = 0x100;//70224;
+        public static readonly int TicksPerFrame = 70224;
 
         public Emulator(string romPath) {
             byte[] romContents = File.ReadAllBytes(romPath);
@@ -16,15 +17,18 @@
             if (File.Exists(customBootromPath))
                 bootrom = File.ReadAllBytes(customBootromPath);
 
-            Memory = useBootrom ? new MemoryBus(romContents, bootrom) : new MemoryBus(romContents);
+            Memory = useBootrom ? new MemoryBus(this, romContents, bootrom) : new MemoryBus(this, romContents);
             CPU = new CPU(Memory);
+            PPU = new PPU();
         }
 
         public void TickFrame()
         {
             for(int i = 0; i < TicksPerFrame; i++)
             {
-                CPU.Tick();
+                if ((i & 0b11) == 0)
+                    CPU.Tick();
+                PPU.Tick();
             }
         }
     }
