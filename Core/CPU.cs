@@ -150,7 +150,6 @@ namespace Renga.Core
         {
             // TODO: Check for interrupts
 
-            PC = 0;
             Console.WriteLine($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC+1)):X2} {Memory.Read((ushort)(PC+2)):X2}");
 
             Opcode = FetchNextByte();
@@ -239,9 +238,7 @@ namespace Renga.Core
 
         private void InitializeOpcodeMaps()
         {
-            _opcodeMap[0x00] = () => {
-                _actionQueue.Enqueue(FetchInstruction);
-            };
+            #region 16-bit Immediate Loads
             _opcodeMap[0x01] = () => {
                 EnqueueInstructionOperations(
                     () => C = FetchNextByte(),
@@ -266,7 +263,9 @@ namespace Renga.Core
                     () => SP = (ushort)((SP & 0xFF) | (FetchNextByte() << 8))
                 );
             };
+            #endregion
 
+            #region 8-bit ALU
             _opcodeMap[0x80] = () => { OperationALU8(ALUOperation.ADD, B); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x81] = () => { OperationALU8(ALUOperation.ADD, C); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x82] = () => { OperationALU8(ALUOperation.ADD, D); _actionQueue.Enqueue(FetchInstruction); };
@@ -338,8 +337,12 @@ namespace Renga.Core
             _opcodeMap[0xBD] = () => { OperationALU8(ALUOperation.CP, L); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xBE] = () => { EnqueueInstructionOperations(() => { Operand1 = FetchNextByte(); OperationALU8(ALUOperation.CP, Operand1); }); };
             _opcodeMap[0xBF] = () => { OperationALU8(ALUOperation.CP, A); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
 
+            #region Miscellaneous
+            _opcodeMap[0x00] = () => { _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xCB] = () => { _actionQueue.Enqueue(FetchInstructionCB); };
+            #endregion
         }
     }
 }
