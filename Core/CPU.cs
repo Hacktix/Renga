@@ -521,23 +521,29 @@ namespace Renga.Core
             #endregion
 
             #region INC/DEC
-            _opcodeMap[0x04] = () => { B++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x0C] = () => { C++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x14] = () => { D++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x1C] = () => { E++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x24] = () => { H++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x2C] = () => { L++; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x34] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, (byte)(tmp + 1))); };
-            _opcodeMap[0x3C] = () => { A++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x04] = () => { FlagH = (B & 0xF) == 0xF; FlagN = false; FlagZ = B == 0xFF; B++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0C] = () => { FlagH = (C & 0xF) == 0xF; FlagN = false; FlagZ = C == 0xFF; C++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x14] = () => { FlagH = (D & 0xF) == 0xF; FlagN = false; FlagZ = D == 0xFF; D++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1C] = () => { FlagH = (E & 0xF) == 0xF; FlagN = false; FlagZ = E == 0xFF; E++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x24] = () => { FlagH = (H & 0xF) == 0xF; FlagN = false; FlagZ = H == 0xFF; H++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2C] = () => { FlagH = (L & 0xF) == 0xF; FlagN = false; FlagZ = L == 0xFF; L++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x34] = () => { byte tmp = 0; EnqueueInstructionOperations(
+                () => { tmp = Memory.Read(HL); FlagH = (tmp & 0xF) == 0xF; FlagN = false; FlagZ = tmp == 0xFF; },
+                () => Memory.Write(HL, (byte)(tmp + 1))
+            ); };
+            _opcodeMap[0x3C] = () => { FlagH = (A & 0xF) == 0xF; FlagN = false; FlagZ = A == 0xFF; A++; _actionQueue.Enqueue(FetchInstruction); };
 
-            _opcodeMap[0x05] = () => { B--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x0D] = () => { C--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x15] = () => { D--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x1D] = () => { E--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x25] = () => { H--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x2D] = () => { L--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x35] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, (byte)(tmp - 1))); };
-            _opcodeMap[0x3D] = () => { A--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x04] = () => { FlagH = (B & 0xF) == 0; FlagN = true; FlagZ = B == 0; B--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0C] = () => { FlagH = (C & 0xF) == 0; FlagN = true; FlagZ = C == 0; C--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x14] = () => { FlagH = (D & 0xF) == 0; FlagN = true; FlagZ = D == 0; D--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1C] = () => { FlagH = (E & 0xF) == 0; FlagN = true; FlagZ = E == 0; E--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x24] = () => { FlagH = (H & 0xF) == 0; FlagN = true; FlagZ = H == 0; H--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2C] = () => { FlagH = (L & 0xF) == 0; FlagN = true; FlagZ = L == 0; L--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x34] = () => { byte tmp = 0; EnqueueInstructionOperations(
+                () => { tmp = Memory.Read(HL); FlagH = (tmp & 0xF) == 0; FlagN = true; FlagZ = tmp == 0; },
+                () => Memory.Write(HL, (byte)(tmp - 1))
+            ); };
+            _opcodeMap[0x3C] = () => { FlagH = (A & 0xF) == 0; FlagN = true; FlagZ = A == 0; A--; _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region Miscellaneous
