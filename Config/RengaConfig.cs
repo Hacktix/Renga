@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System.Reflection;
+
+#pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8603 // Possible null reference return.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace Renga.Config
 {
@@ -14,7 +17,7 @@ namespace Renga.Config
                 string confText = File.ReadAllText("settings.json");
                 _config = JsonConvert.DeserializeObject<Dictionary<string, object>>(confText);
             }
-            catch(FileNotFoundException e)
+            catch(FileNotFoundException)
             {
                 _config = GenerateDefaultSettings();
             }

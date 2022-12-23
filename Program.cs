@@ -4,7 +4,10 @@
     {
         static void Main(string[] args)
         {
-            new Renga().Run();
+            if (args.Length == 0)
+                new Renga().Run();
+            else
+                new Renga(args).Run();
         }
     }
 }

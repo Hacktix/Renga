@@ -146,7 +146,7 @@ namespace Renga.Core
         {
             // TODO: Check for interrupts
 
-            Console.WriteLine($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC+1)):X2} {Memory.Read((ushort)(PC+2)):X2}");
+            Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC+1)):X2} {Memory.Read((ushort)(PC+2)):X2}");
 
             byte opcode = FetchNextByte();
             try
@@ -155,7 +155,8 @@ namespace Renga.Core
             }
             catch (Exception)
             {
-                throw new NotImplementedException($"Encountered unknown opcode ${opcode:X2} at memory address ${PC-1:X4}");
+                Renga.Log.Error($"Encountered unknown opcode ${opcode:X2} at memory address ${PC - 1:X4}");
+                throw new NotImplementedException();
             }
         }
 
@@ -168,7 +169,8 @@ namespace Renga.Core
             }
             catch (Exception)
             {
-                throw new NotImplementedException($"Encountered unknown 0xCB opcode ${opcode:X2} at memory address ${PC - 1:X4}");
+                Renga.Log.Error($"Encountered unknown 0xCB opcode ${opcode:X2} at memory address ${PC - 1:X4}");
+                throw new NotImplementedException();
             }
         }
 
