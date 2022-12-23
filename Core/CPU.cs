@@ -175,7 +175,6 @@ namespace Renga.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte FetchNextByte() { return Memory.Read(PC++); }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OperationALU8(ALUOperation operation, byte value)
         {
@@ -406,6 +405,26 @@ namespace Renga.Core
             _opcodeMap[0xBD] = () => { OperationALU8(ALUOperation.CP, L); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xBE] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.CP, FetchNextByte()); }); };
             _opcodeMap[0xBF] = () => { OperationALU8(ALUOperation.CP, A); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
+            #region INC/DEC
+            _opcodeMap[0x04] = () => { B++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0C] = () => { C++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x14] = () => { D++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1C] = () => { E++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x24] = () => { H++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2C] = () => { L++; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x34] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, (byte)(tmp + 1))); };
+            _opcodeMap[0x3C] = () => { A++; _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x05] = () => { B--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0D] = () => { C--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x15] = () => { D--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1D] = () => { E--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x25] = () => { H--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2D] = () => { L--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x35] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, (byte)(tmp - 1))); };
+            _opcodeMap[0x3D] = () => { A--; _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region Miscellaneous
