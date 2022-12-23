@@ -268,6 +268,24 @@ namespace Renga.Core
             
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OperationCALL(bool condition)
+        {
+            if(!condition)
+                EnqueueInstructionOperations(() => FetchNextByte(), () => FetchNextByte());
+            else
+            {
+                ushort callAddr = 0;
+                EnqueueInstructionOperations(
+                    () => callAddr |= FetchNextByte(),
+                    () => callAddr |= (ushort)(FetchNextByte() << 8),
+                    () => { },
+                    () => Memory.Write(--SP, (byte)(PC >> 8)),
+                    () => { Memory.Write(--SP, (byte)(PC & 0xFF)); PC = callAddr; }
+                );
+            }
+        }
+
         private void InitializeOpcodeMaps()
         {
             #region Control Flow
@@ -276,6 +294,87 @@ namespace Renga.Core
             _opcodeMap[0x28] = () => { OperationJR(FlagZ); };
             _opcodeMap[0x30] = () => { OperationJR(!FlagC); };
             _opcodeMap[0x38] = () => { OperationJR(FlagC); };
+
+            _opcodeMap[0xCD] = () => { OperationCALL(true); };
+            _opcodeMap[0xC4] = () => { OperationCALL(!FlagZ); };
+            _opcodeMap[0xCC] = () => { OperationCALL(FlagZ); };
+            _opcodeMap[0xD4] = () => { OperationCALL(!FlagC); };
+            _opcodeMap[0xDC] = () => { OperationCALL(FlagC); };
+            #endregion
+
+            #region Register Loads
+            _opcodeMap[0x40] = () => { B = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x41] = () => { B = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x42] = () => { B = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x43] = () => { B = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x44] = () => { B = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x45] = () => { B = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x46] = () => { _actionQueue.Enqueue(() => B = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x47] = () => { B = A; _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x48] = () => { C = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x49] = () => { C = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4A] = () => { C = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4B] = () => { C = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4C] = () => { C = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4D] = () => { C = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4E] = () => { _actionQueue.Enqueue(() => C = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x4F] = () => { C = A; _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x50] = () => { D = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x51] = () => { D = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x52] = () => { D = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x53] = () => { D = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x54] = () => { D = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x55] = () => { D = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x56] = () => { _actionQueue.Enqueue(() => D = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x57] = () => D = A;
+
+            _opcodeMap[0x58] = () => { E = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x59] = () => { E = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5A] = () => { E = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5B] = () => { E = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5C] = () => { E = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5D] = () => { E = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5E] = () => { _actionQueue.Enqueue(() => E = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x5F] = () => { E = A; _actionQueue.Enqueue(FetchInstruction); };
+
+
+            _opcodeMap[0x60] = () => { H = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x61] = () => { H = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x62] = () => { H = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x63] = () => { H = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x64] = () => { H = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x65] = () => { H = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x66] = () => { _actionQueue.Enqueue(() => H = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x67] = () => { H = A; _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x68] = () => { L = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x69] = () => { L = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6A] = () => { L = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6B] = () => { L = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6C] = () => { L = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6D] = () => { L = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6E] = () => { _actionQueue.Enqueue(() => L = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x6F] = () => { L = A; _actionQueue.Enqueue(FetchInstruction); };
+
+
+            _opcodeMap[0x70] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, B)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x71] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, C)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x72] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, D)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x73] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, E)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x74] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, H)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x75] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, L)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x77] = () => { _actionQueue.Enqueue(() => Memory.Write(HL, A)); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x78] = () => { A = B; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x79] = () => { A = C; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7A] = () => { A = D; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7B] = () => { A = E; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7C] = () => { A = H; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7D] = () => { A = L; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7E] = () => { _actionQueue.Enqueue(() => A = Memory.Read(HL)); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x7F] = () => { A = A; _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region MMIO Loads (LDH)
