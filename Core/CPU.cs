@@ -113,6 +113,8 @@ namespace Renga.Core
             }
         }
 
+        public bool InterruptsEnabled = false;
+
         public MemoryBus Memory;
         
         private Queue<Action> _actionQueue = new Queue<Action>();
@@ -286,6 +288,32 @@ namespace Renga.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OperationRET(bool condition, bool hasCondition = true, bool enableInterrupts = false)
+        {
+            if (!condition)
+                EnqueueInstructionOperations(() => { });
+            else
+            {
+                ushort retAddr = 0;
+                if (!hasCondition)
+                    EnqueueInstructionOperations(
+                        () => retAddr = Memory.Read(SP++),
+                        () => retAddr |= (ushort)(Memory.Read(SP++) << 8),
+                        () => PC = retAddr
+                    );
+                else
+                    EnqueueInstructionOperations(
+                        () => { },
+                        () => retAddr = Memory.Read(SP++),
+                        () => retAddr |= (ushort)(Memory.Read(SP++) << 8),
+                        () => PC = retAddr
+                    );
+                if (enableInterrupts)
+                    InterruptsEnabled = true;
+            }
+        }
+
         private void InitializeOpcodeMaps()
         {
             #region Control Flow
@@ -300,6 +328,13 @@ namespace Renga.Core
             _opcodeMap[0xCC] = () => { OperationCALL(FlagZ); };
             _opcodeMap[0xD4] = () => { OperationCALL(!FlagC); };
             _opcodeMap[0xDC] = () => { OperationCALL(FlagC); };
+
+            _opcodeMap[0xC9] = () => { OperationRET(true, false); };
+            _opcodeMap[0xD9] = () => { OperationRET(true, false, true); };
+            _opcodeMap[0xC0] = () => { OperationRET(!FlagZ); };
+            _opcodeMap[0xD0] = () => { OperationRET(!FlagC); };
+            _opcodeMap[0xC8] = () => { OperationRET(FlagZ); };
+            _opcodeMap[0xD8] = () => { OperationRET(FlagC); };
             #endregion
 
             #region Register Loads
