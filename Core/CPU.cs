@@ -464,6 +464,24 @@ namespace Renga.Core
             _opcodeMap[0x1A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(DE)); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x2A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(HL++)); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x3A] = () => { _actionQueue.Enqueue(() => A = Memory.Read(HL--)); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0xEA] = () => { ushort r = 0; EnqueueInstructionOperations(
+                () => r = FetchNextByte(),
+                () => r |= (ushort)(FetchNextByte() << 8),
+                () => Memory.Write(r, A)
+            ); };
+            _opcodeMap[0xEA] = () => { ushort r = 0; EnqueueInstructionOperations(
+                () => r = FetchNextByte(),
+                () => r |= (ushort)(FetchNextByte() << 8),
+                () => A = Memory.Read(r)
+            ); };
+
+            _opcodeMap[0x08] = () => { ushort r = 0; EnqueueInstructionOperations(
+                () => r = FetchNextByte(),
+                () => r |= (ushort)(FetchNextByte() << 8),
+                () => Memory.Write(r, (byte)(SP & 0xFF)),
+                () => Memory.Write((ushort)(r+1), (byte)(SP >> 8))
+            ); };
             #endregion
 
             #region 16-bit Immediate Loads
