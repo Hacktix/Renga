@@ -47,7 +47,7 @@ namespace Renga.Core
             if (addr < 0xFF80) return ReadMMIO(addr);
             if (addr < 0xFFFE) return HRAM.Read(addr);
 
-            throw new NotImplementedException("Read from unimplemented IE Register");
+            return _emu.CPU.IE;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,7 +76,7 @@ namespace Renga.Core
             if (addr < 0xFF80) { WriteMMIO(addr, val); return; }
             if (addr < 0xFFFE) { HRAM.Write(addr, val); return; }
 
-            throw new NotImplementedException("Write 0x{val:X2} to unimplemented IE Register");
+            _emu.CPU.IE = val;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

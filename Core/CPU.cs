@@ -114,6 +114,7 @@ namespace Renga.Core
         }
 
         public bool InterruptsEnabled = false;
+        public byte IE = 0;
 
         public MemoryBus Memory;
         
@@ -314,6 +315,22 @@ namespace Renga.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OperationJP(bool condition)
+        {
+            if (!condition)
+                EnqueueInstructionOperations(() => FetchNextByte(), () => FetchNextByte());
+            else
+            {
+                ushort jpAddr = 0;
+                EnqueueInstructionOperations(
+                    () => jpAddr = FetchNextByte(),
+                    () => jpAddr |= (ushort)(FetchNextByte() << 8),
+                    () => PC = jpAddr
+                );
+            }
+        }
+
         private void InitializeOpcodeMaps()
         {
             #region Control Flow
@@ -335,6 +352,13 @@ namespace Renga.Core
             _opcodeMap[0xD0] = () => { OperationRET(!FlagC); };
             _opcodeMap[0xC8] = () => { OperationRET(FlagZ); };
             _opcodeMap[0xD8] = () => { OperationRET(FlagC); };
+
+            _opcodeMap[0xC3] = () => { OperationJP(true); };
+            _opcodeMap[0xC2] = () => { OperationJP(!FlagZ); };
+            _opcodeMap[0xD2] = () => { OperationJP(!FlagC); };
+            _opcodeMap[0xCA] = () => { OperationJP(FlagZ); };
+            _opcodeMap[0xDA] = () => { OperationJP(FlagC); };
+            _opcodeMap[0xE9] = () => { PC = HL; _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region Register Loads
@@ -603,6 +627,9 @@ namespace Renga.Core
             #region Miscellaneous
             _opcodeMap[0x00] = () => { _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xCB] = () => { _actionQueue.Enqueue(FetchInstructionCB); };
+
+            _opcodeMap[0xF3] = () => { InterruptsEnabled = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0xFB] = () => _actionQueue.Enqueue(() => { FetchInstruction(); InterruptsEnabled = true; });
 
             _opcodeMap[0x17] = () => { FlagZ = false; FlagN = false; FlagH = false; int c = FlagC ? 1 : 0; FlagC = (A & 0x80) == 0x80; A = (byte)((A << 1) | c); _actionQueue.Enqueue(FetchInstruction); };
             #endregion
