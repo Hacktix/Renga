@@ -606,6 +606,25 @@ namespace Renga.Core
             _opcodeMap[0xFE] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.CP, FetchNextByte()));
             #endregion
 
+            #region 16-bit ALU
+            _opcodeMap[0x09] = () => EnqueueInstructionOperations(
+                () => { FlagN = false; FlagC = (HL + BC) > 0xFFFF; FlagH = ((HL & 0xFFF) + (BC & 0xFFF)) > 0xFFF; },
+                () => HL += BC
+            );
+            _opcodeMap[0x19] = () => EnqueueInstructionOperations(
+                () => { FlagN = false; FlagC = (HL + DE) > 0xFFFF; FlagH = ((HL & 0xFFF) + (DE & 0xFFF)) > 0xFFF; },
+                () => HL += DE
+            );
+            _opcodeMap[0x29] = () => EnqueueInstructionOperations(
+                () => { FlagN = false; FlagC = (HL + HL) > 0xFFFF; FlagH = ((HL & 0xFFF) + (HL & 0xFFF)) > 0xFFF; },
+                () => HL += HL
+            );
+            _opcodeMap[0x39] = () => EnqueueInstructionOperations(
+                () => { FlagN = false; FlagC = (HL + SP) > 0xFFFF; FlagH = ((HL & 0xFFF) + (SP & 0xFFF)) > 0xFFF; },
+                () => HL += SP
+            );
+            #endregion
+
             #region INC/DEC
             _opcodeMap[0x04] = () => { FlagH = (B & 0xF) == 0xF; FlagN = false; FlagZ = B == 0xFF; B++; _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x0C] = () => { FlagH = (C & 0xF) == 0xF; FlagN = false; FlagZ = C == 0xFF; C++; _actionQueue.Enqueue(FetchInstruction); };
