@@ -1,5 +1,6 @@
 ﻿using Renga.Core.ROM;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Renga.Core
 {
@@ -90,7 +91,7 @@ namespace Renga.Core
                     break;
                 case 0xFF02:
                     if (val == 0x81)
-                        Console.Write(_mmio[1]);
+                        Console.Write(Encoding.ASCII.GetString(new byte[] { _mmio[1] }));
                     break;
                 default:
                     _mmio[addr & 0x7F] = val;
