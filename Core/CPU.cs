@@ -488,7 +488,7 @@ namespace Renga.Core
             _opcodeMap[0x83] = () => { OperationALU8(ALUOperation.ADD, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x84] = () => { OperationALU8(ALUOperation.ADD, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x85] = () => { OperationALU8(ALUOperation.ADD, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x86] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.ADD, FetchNextByte()); }); };
+            _opcodeMap[0x86] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.ADD, Memory.Read(HL)); }); };
             _opcodeMap[0x87] = () => { OperationALU8(ALUOperation.ADD, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0x88] = () => { OperationALU8(ALUOperation.ADC, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -497,7 +497,7 @@ namespace Renga.Core
             _opcodeMap[0x8B] = () => { OperationALU8(ALUOperation.ADC, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x8C] = () => { OperationALU8(ALUOperation.ADC, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x8D] = () => { OperationALU8(ALUOperation.ADC, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x8E] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.ADC, FetchNextByte()); }); };
+            _opcodeMap[0x8E] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.ADC, Memory.Read(HL)); }); };
             _opcodeMap[0x8F] = () => { OperationALU8(ALUOperation.ADC, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0x90] = () => { OperationALU8(ALUOperation.SUB, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -506,7 +506,7 @@ namespace Renga.Core
             _opcodeMap[0x93] = () => { OperationALU8(ALUOperation.SUB, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x94] = () => { OperationALU8(ALUOperation.SUB, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x95] = () => { OperationALU8(ALUOperation.SUB, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x96] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.SUB, FetchNextByte()); }); };
+            _opcodeMap[0x96] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.SUB, Memory.Read(HL)); }); };
             _opcodeMap[0x97] = () => { OperationALU8(ALUOperation.SUB, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0x98] = () => { OperationALU8(ALUOperation.SBC, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -515,7 +515,7 @@ namespace Renga.Core
             _opcodeMap[0x9B] = () => { OperationALU8(ALUOperation.SBC, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x9C] = () => { OperationALU8(ALUOperation.SBC, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x9D] = () => { OperationALU8(ALUOperation.SBC, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x9E] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.SBC, FetchNextByte()); }); };
+            _opcodeMap[0x9E] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.SBC, Memory.Read(HL)); }); };
             _opcodeMap[0x9F] = () => { OperationALU8(ALUOperation.SBC, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0xA0] = () => { OperationALU8(ALUOperation.AND, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -524,7 +524,7 @@ namespace Renga.Core
             _opcodeMap[0xA3] = () => { OperationALU8(ALUOperation.AND, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xA4] = () => { OperationALU8(ALUOperation.AND, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xA5] = () => { OperationALU8(ALUOperation.AND, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0xA6] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.AND, FetchNextByte()); }); };
+            _opcodeMap[0xA6] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.AND, Memory.Read(HL)); }); };
             _opcodeMap[0xA7] = () => { OperationALU8(ALUOperation.AND, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0xA8] = () => { OperationALU8(ALUOperation.XOR, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -533,7 +533,7 @@ namespace Renga.Core
             _opcodeMap[0xAB] = () => { OperationALU8(ALUOperation.XOR, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xAC] = () => { OperationALU8(ALUOperation.XOR, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xAD] = () => { OperationALU8(ALUOperation.XOR, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0xAE] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.XOR, FetchNextByte()); }); };
+            _opcodeMap[0xAE] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.XOR, Memory.Read(HL)); }); };
             _opcodeMap[0xAF] = () => { OperationALU8(ALUOperation.XOR, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0xB0] = () => { OperationALU8(ALUOperation.OR, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -542,7 +542,7 @@ namespace Renga.Core
             _opcodeMap[0xB3] = () => { OperationALU8(ALUOperation.OR, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xB4] = () => { OperationALU8(ALUOperation.OR, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xB5] = () => { OperationALU8(ALUOperation.OR, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0xB6] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.OR, FetchNextByte()); }); };
+            _opcodeMap[0xB6] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.OR, Memory.Read(HL)); }); };
             _opcodeMap[0xB7] = () => { OperationALU8(ALUOperation.OR, A); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0xB8] = () => { OperationALU8(ALUOperation.CP, B); _actionQueue.Enqueue(FetchInstruction); };
@@ -551,8 +551,17 @@ namespace Renga.Core
             _opcodeMap[0xBB] = () => { OperationALU8(ALUOperation.CP, E); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xBC] = () => { OperationALU8(ALUOperation.CP, H); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xBD] = () => { OperationALU8(ALUOperation.CP, L); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0xBE] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.CP, FetchNextByte()); }); };
+            _opcodeMap[0xBE] = () => { EnqueueInstructionOperations(() => { OperationALU8(ALUOperation.CP, Memory.Read(HL)); }); };
             _opcodeMap[0xBF] = () => { OperationALU8(ALUOperation.CP, A); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0xC6] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.ADD, FetchNextByte()));
+            _opcodeMap[0xD6] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.SUB, FetchNextByte()));
+            _opcodeMap[0xE6] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.AND, FetchNextByte()));
+            _opcodeMap[0xF6] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.OR, FetchNextByte()));
+            _opcodeMap[0xCE] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.ADC, FetchNextByte()));
+            _opcodeMap[0xDE] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.SBC, FetchNextByte()));
+            _opcodeMap[0xEE] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.XOR, FetchNextByte()));
+            _opcodeMap[0xFE] = () => EnqueueInstructionOperations(() => OperationALU8(ALUOperation.CP, FetchNextByte()));
             #endregion
 
             #region INC/DEC
