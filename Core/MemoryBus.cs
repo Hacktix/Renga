@@ -55,6 +55,7 @@ namespace Renga.Core
         {
             switch(addr)
             {
+                case 0xFF44: return _emu.PPU.LY;
                 default:
                     return _mmio[addr & 0x7F];
             }

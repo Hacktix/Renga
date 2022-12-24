@@ -10,6 +10,7 @@ namespace Renga.Core
     internal class PPU
     {
         public byte[] VRAM = new byte[0x2000];
+        public byte LY = 144;
 
         public byte ReadVRAM(ushort addr)
         {
