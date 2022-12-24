@@ -472,7 +472,7 @@ namespace Renga.Core
                 () => r |= (ushort)(FetchNextByte() << 8),
                 () => Memory.Write(r, A)
             ); };
-            _opcodeMap[0xEA] = () => { ushort r = 0; EnqueueInstructionOperations(
+            _opcodeMap[0xFA] = () => { ushort r = 0; EnqueueInstructionOperations(
                 () => r = FetchNextByte(),
                 () => r |= (ushort)(FetchNextByte() << 8),
                 () => A = Memory.Read(r)
