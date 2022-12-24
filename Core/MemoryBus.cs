@@ -88,6 +88,10 @@ namespace Renga.Core
                     if ((val & 1) != 0)
                         OverlayBootrom = false;
                     break;
+                case 0xFF02:
+                    if (val == 0x81)
+                        Console.Write(_mmio[1]);
+                    break;
                 default:
                     _mmio[addr & 0x7F] = val;
                     break;

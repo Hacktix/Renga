@@ -149,7 +149,9 @@ namespace Renga.Core
         {
             // TODO: Check for interrupts
 
+#if DEBUG
             Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC+1)):X2} {Memory.Read((ushort)(PC+2)):X2}");
+#endif
 
             byte opcode = FetchNextByte();
             try
@@ -518,9 +520,9 @@ namespace Renga.Core
             _opcodeMap[0xF5] = () => EnqueueInstructionOperations(() => { }, () => Memory.Write(--SP, A), () => Memory.Write(--SP, F));
 
             _opcodeMap[0xC1] = () => EnqueueInstructionOperations(() => C = Memory.Read(SP++), () => B = Memory.Read(SP++));
-            _opcodeMap[0xD1] = () => EnqueueInstructionOperations(() => D = Memory.Read(SP++), () => E = Memory.Read(SP++));
-            _opcodeMap[0xE1] = () => EnqueueInstructionOperations(() => H = Memory.Read(SP++), () => L = Memory.Read(SP++));
-            _opcodeMap[0xF1] = () => EnqueueInstructionOperations(() => A = Memory.Read(SP++), () => F = Memory.Read(SP++));
+            _opcodeMap[0xD1] = () => EnqueueInstructionOperations(() => E = Memory.Read(SP++), () => D = Memory.Read(SP++));
+            _opcodeMap[0xE1] = () => EnqueueInstructionOperations(() => L = Memory.Read(SP++), () => H = Memory.Read(SP++));
+            _opcodeMap[0xF1] = () => EnqueueInstructionOperations(() => F = Memory.Read(SP++), () => A = Memory.Read(SP++));
             #endregion
 
             #region 8-bit ALU
