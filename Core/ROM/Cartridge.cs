@@ -64,6 +64,7 @@ namespace Renga.Core.ROM
             switch(data[0x147])
             {
                 case 0x00: MBC = new ROM(this); break;
+                case 0x01: MBC = new ROM(this); break; // TODO: Replace this with a proper MBC1 implementation
                 default: throw new NotImplementedException($"Unknown/Unimplemented MBC with ID ${data[0x147]:X}");
             }
         }
