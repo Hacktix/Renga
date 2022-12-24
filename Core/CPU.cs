@@ -622,6 +622,30 @@ namespace Renga.Core
             _opcodeMapCB[0x17] = () => { int c = FlagC ? 1 : 0; FlagC = (A & 0x80) == 0x80; A = (byte)((A << 1) | c); FlagZ = B == 0; FlagN = false; FlagH = false; _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
+            #region SWAP
+            _opcodeMapCB[0x30] = () => { B = (byte)((B << 4) | (B >> 4)); FlagZ = B == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x31] = () => { C = (byte)((C << 4) | (C >> 4)); FlagZ = C == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x32] = () => { D = (byte)((D << 4) | (D >> 4)); FlagZ = D == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x33] = () => { E = (byte)((E << 4) | (E >> 4)); FlagZ = E == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x34] = () => { H = (byte)((H << 4) | (H >> 4)); FlagZ = H == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x35] = () => { L = (byte)((L << 4) | (L >> 4)); FlagZ = L == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x36] = () => {
+                byte tmp = 0;
+                EnqueueInstructionOperations(
+                    () => tmp = Memory.Read(HL),
+                    () => {
+                        tmp = (byte)((tmp << 4) | (tmp >> 4));
+                        Memory.Write(HL, tmp);
+                        FlagZ = tmp == 0;
+                        FlagN = false;
+                        FlagH = false;
+                        FlagC = false;
+                    }
+                );
+            };
+            _opcodeMapCB[0x37] = () => { A = (byte)((A << 4) | (A >> 4)); FlagZ = A == 0; FlagN = false; FlagH = false; FlagC = false; _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
             #region BIT
             _opcodeMapCB[0x40] = () => { OperationBIT(B, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x41] = () => { OperationBIT(C, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
