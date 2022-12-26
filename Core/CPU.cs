@@ -677,6 +677,16 @@ namespace Renga.Core
                 () => { FlagN = false; FlagC = (HL + SP) > 0xFFFF; FlagH = ((HL & 0xFFF) + (SP & 0xFFF)) > 0xFFF; },
                 () => HL += SP
             );
+
+            _opcodeMap[0xE8] = () => { sbyte e = 0; EnqueueInstructionOperations(
+                () => e = (sbyte)FetchNextByte(),
+                () => { FlagZ = false; FlagN = false; FlagH = (e & 0xF) + (SP & 0xF) > 0xF; FlagC = (e & 0xFF) + (SP & 0xFF) > 0xFF; },
+                () => SP = (ushort)(SP + e)
+            ); };
+            _opcodeMap[0xF8] = () => { sbyte e = 0; EnqueueInstructionOperations(
+                () => e = (sbyte)FetchNextByte(),
+                () => { FlagZ = false; FlagN = false; FlagH = (e & 0xF) + (SP & 0xF) > 0xF; FlagC = (e & 0xFF) + (SP & 0xFF) > 0xFF; HL = (ushort)(SP + e); }
+            ); };
             #endregion
 
             #region INC/DEC
