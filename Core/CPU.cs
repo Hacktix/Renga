@@ -119,9 +119,15 @@ namespace Renga.Core
         public MemoryBus Memory;
         
         private Queue<Action> _actionQueue = new Queue<Action>();
-
         private Dictionary<byte, Action> _opcodeMap = new Dictionary<byte, Action>();
         private Dictionary<byte, Action> _opcodeMapCB = new Dictionary<byte, Action>();
+
+        private bool _debugging = false;
+        private ushort _breakpoint = 0xFFFF;
+        private byte _opcodeBreak = 0xFF;
+        private byte _cbOpcodeBreak = 0xFF;
+
+        private bool _writeDiffLogs = false;
 
         public CPU(MemoryBus memory)
         {
@@ -129,6 +135,23 @@ namespace Renga.Core
 
             InitializeOpcodeMaps();
             _actionQueue.Enqueue(FetchInstruction);
+
+#if DEBUG
+            if(_writeDiffLogs)
+            {
+                A = 0x01;
+                F = 0xB0;
+                B = 0x00;
+                C = 0x13;
+                D = 0x00;
+                E = 0xD8;
+                H = 0x01;
+                L = 0x4D;
+                SP = 0xFFFE;
+                PC = 0x0100;
+                Memory.Write(0xFF50, 1);
+            }
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -148,12 +171,23 @@ namespace Renga.Core
         public void FetchInstruction()
         {
             // TODO: Check for interrupts
+            byte opcode = FetchNextByte();
 
 #if DEBUG
-            Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC+1)):X2} {Memory.Read((ushort)(PC+2)):X2}");
-#endif
+            if (_breakpoint == PC - 1 || opcode == _opcodeBreak)
+                _debugging = true;
 
-            byte opcode = FetchNextByte();
+            if (_debugging)
+            {
+                Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC:X4} SP: ${SP:X4} | {Memory.Read(PC):X2} {Memory.Read((ushort)(PC + 1)):X2} {Memory.Read((ushort)(PC + 2)):X2}");
+                var key = Console.ReadKey();
+                if (key.Key == ConsoleKey.Q)
+                    _debugging = false;
+            }
+
+            if (_writeDiffLogs)
+                File.AppendAllLines("difflog.txt", new string[] { $"A:{A:X2} F:{F:X2} B:{B:X2} C:{C:X2} D:{D:X2} E:{E:X2} H:{H:X2} L:{L:X2} SP:{SP:X4} PC:{PC-1:X4} PCMEM:{Memory.Read((ushort)(PC - 1)):X2},{Memory.Read((ushort)(PC)):X2},{Memory.Read((ushort)(PC + 1)):X2},{Memory.Read((ushort)(PC + 2)):X2}" });
+#endif
             try
             {
                 _opcodeMap[opcode]();
@@ -168,6 +202,16 @@ namespace Renga.Core
         public void FetchInstructionCB()
         {
             byte opcode = FetchNextByte();
+
+#if DEBUG
+            if (_cbOpcodeBreak == opcode)
+            {
+                _debugging = true;
+                Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC-2:X4} SP: ${SP:X4} | {Memory.Read((ushort)(PC-2)):X2} {Memory.Read((ushort)(PC - 1)):X2} {Memory.Read((ushort)(PC)):X2}");
+                Console.ReadKey();
+            }
+#endif
+
             try
             {
                 _opcodeMapCB[opcode]();
@@ -507,8 +551,8 @@ namespace Renga.Core
             };
             _opcodeMap[0x31] = () => {
                 EnqueueInstructionOperations(
-                    () => SP = (ushort)((SP & 0xFF00) | FetchNextByte()),
-                    () => SP = (ushort)((SP & 0xFF) | (FetchNextByte() << 8))
+                    () => SP = FetchNextByte(),
+                    () => SP |= (ushort)(FetchNextByte() << 8)
                 );
             };
             #endregion
@@ -640,17 +684,17 @@ namespace Renga.Core
             ); };
             _opcodeMap[0x3C] = () => { FlagH = (A & 0xF) == 0xF; FlagN = false; FlagZ = A == 0xFF; A++; _actionQueue.Enqueue(FetchInstruction); };
 
-            _opcodeMap[0x05] = () => { FlagH = (B & 0xF) == 0; FlagN = true; FlagZ = B == 0; B--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x0D] = () => { FlagH = (C & 0xF) == 0; FlagN = true; FlagZ = C == 0; C--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x15] = () => { FlagH = (D & 0xF) == 0; FlagN = true; FlagZ = D == 0; D--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x1D] = () => { FlagH = (E & 0xF) == 0; FlagN = true; FlagZ = E == 0; E--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x25] = () => { FlagH = (H & 0xF) == 0; FlagN = true; FlagZ = H == 0; H--; _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMap[0x2D] = () => { FlagH = (L & 0xF) == 0; FlagN = true; FlagZ = L == 0; L--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x05] = () => { FlagH = (B & 0xF) == 0; FlagN = true; FlagZ = B == 1; B--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x0D] = () => { FlagH = (C & 0xF) == 0; FlagN = true; FlagZ = C == 1; C--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x15] = () => { FlagH = (D & 0xF) == 0; FlagN = true; FlagZ = D == 1; D--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x1D] = () => { FlagH = (E & 0xF) == 0; FlagN = true; FlagZ = E == 1; E--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x25] = () => { FlagH = (H & 0xF) == 0; FlagN = true; FlagZ = H == 1; H--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x2D] = () => { FlagH = (L & 0xF) == 0; FlagN = true; FlagZ = L == 1; L--; _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x35] = () => { byte tmp = 0; EnqueueInstructionOperations(
-                () => { tmp = Memory.Read(HL); FlagH = (tmp & 0xF) == 0; FlagN = true; FlagZ = tmp == 0; },
+                () => { tmp = Memory.Read(HL); FlagH = (tmp & 0xF) == 0; FlagN = true; FlagZ = tmp == 1; },
                 () => Memory.Write(HL, (byte)(tmp - 1))
             ); };
-            _opcodeMap[0x3D] = () => { FlagH = (A & 0xF) == 0; FlagN = true; FlagZ = A == 0; A--; _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMap[0x3D] = () => { FlagH = (A & 0xF) == 0; FlagN = true; FlagZ = A == 1; A--; _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0x03] = () => { _actionQueue.Enqueue(() => BC++); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x13] = () => { _actionQueue.Enqueue(() => DE++); _actionQueue.Enqueue(FetchInstruction); };
