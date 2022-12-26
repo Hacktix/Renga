@@ -5,6 +5,7 @@
         public readonly MemoryBus Memory;
         public readonly CPU CPU;
         public readonly PPU PPU;
+        public readonly Timer Timer;
 
         public static readonly int TicksPerFrame = 70224;
 
@@ -20,6 +21,7 @@
             Memory = useBootrom ? new MemoryBus(this, romContents, bootrom) : new MemoryBus(this, romContents);
             CPU = new CPU(Memory);
             PPU = new PPU();
+            Timer = new Timer(this);
         }
 
         public void TickFrame()
@@ -27,7 +29,10 @@
             for(int i = 0; i < TicksPerFrame; i++)
             {
                 if ((i & 0b11) == 0)
+                {
+                    Timer.Tick();
                     CPU.Tick();
+                }
                 PPU.Tick();
             }
         }

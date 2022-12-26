@@ -56,6 +56,11 @@ namespace Renga.Core
         {
             switch(addr)
             {
+                case 0xFF04:
+                case 0xFF05:
+                case 0xFF06:
+                case 0xFF07:
+                    return _emu.Timer.Read(addr);
                 case 0xFF0F: return _emu.CPU.IF;
                 case 0xFF44: return _emu.PPU.LY;
                 default:
@@ -89,6 +94,12 @@ namespace Renga.Core
                 case 0xFF02:
                     if (val == 0x81)
                         Console.Write(Encoding.ASCII.GetString(new byte[] { _mmio[1] }));
+                    break;
+                case 0xFF04:
+                case 0xFF05:
+                case 0xFF06:
+                case 0xFF07:
+                    _emu.Timer.Write(addr, val);
                     break;
                 case 0xFF0F:
                     _emu.CPU.IF = val;
