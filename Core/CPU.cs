@@ -377,6 +377,16 @@ namespace Renga.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void OperationRST(byte vec)
+        {
+            EnqueueInstructionOperations(
+                () => { },
+                () => Memory.Write(--SP, (byte)(PC >> 8)),
+                () => { Memory.Write(--SP, (byte)(PC & 0xFF)); PC = vec; }
+            );
+        }
+
         private void InitializeOpcodeMaps()
         {
             #region Control Flow
@@ -405,6 +415,15 @@ namespace Renga.Core
             _opcodeMap[0xCA] = () => { OperationJP(FlagZ); };
             _opcodeMap[0xDA] = () => { OperationJP(FlagC); };
             _opcodeMap[0xE9] = () => { PC = HL; _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0xC7] = () => { OperationRST(0x00); };
+            _opcodeMap[0xCF] = () => { OperationRST(0x08); };
+            _opcodeMap[0xD7] = () => { OperationRST(0x10); };
+            _opcodeMap[0xDF] = () => { OperationRST(0x18); };
+            _opcodeMap[0xE7] = () => { OperationRST(0x20); };
+            _opcodeMap[0xEF] = () => { OperationRST(0x28); };
+            _opcodeMap[0xF7] = () => { OperationRST(0x30); };
+            _opcodeMap[0xFF] = () => { OperationRST(0x38); };
             #endregion
 
             #region Register Loads
@@ -716,6 +735,8 @@ namespace Renga.Core
 
             _opcodeMap[0x17] = () => { FlagZ = false; FlagN = false; FlagH = false; int c = FlagC ? 1 : 0; FlagC = (A & 0x80) == 0x80; A = (byte)((A << 1) | c); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x1F] = () => { FlagZ = false; FlagN = false; FlagH = false; int c = FlagC ? 0x80 : 0; FlagC = (A & 1) == 1; A = (byte)((A >> 1) | c); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0xF9] = () => { _actionQueue.Enqueue(() => SP = HL); _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region CB Instructions
