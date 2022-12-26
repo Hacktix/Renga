@@ -124,8 +124,6 @@ namespace Renga.Core
 
         private bool _debugging = false;
         private ushort _breakpoint = 0xFFFF;
-        private byte _opcodeBreak = 0xFF;
-        private byte _cbOpcodeBreak = 0xFF;
 
         private bool _writeDiffLogs = false;
 
@@ -174,7 +172,7 @@ namespace Renga.Core
             byte opcode = FetchNextByte();
 
 #if DEBUG
-            if (_breakpoint == PC - 1 || opcode == _opcodeBreak)
+            if (_breakpoint == PC - 1)
                 _debugging = true;
 
             if (_debugging)
@@ -202,15 +200,6 @@ namespace Renga.Core
         public void FetchInstructionCB()
         {
             byte opcode = FetchNextByte();
-
-#if DEBUG
-            if (_cbOpcodeBreak == opcode)
-            {
-                _debugging = true;
-                Renga.Log.Debug($"AF: ${AF:X4} BC: ${BC:X4} DE: ${DE:X4} HL: ${HL:X4} PC: ${PC-2:X4} SP: ${SP:X4} | {Memory.Read((ushort)(PC-2)):X2} {Memory.Read((ushort)(PC - 1)):X2} {Memory.Read((ushort)(PC)):X2}");
-                Console.ReadKey();
-            }
-#endif
 
             try
             {
