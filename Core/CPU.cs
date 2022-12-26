@@ -825,9 +825,9 @@ namespace Renga.Core
                 () => {
                     int c = FlagC ? 1 : 0;
                     FlagC = (tmp & 0x80) == 0x80;
-                    byte res = (byte)((tmp << 1) | c);
+                    tmp = (byte)((tmp << 1) | c);
                     Memory.Write(HL, tmp);
-                    FlagZ = res == 0;
+                    FlagZ = tmp == 0;
                     FlagN = false;
                     FlagH = false;
                 }
@@ -847,9 +847,9 @@ namespace Renga.Core
                 () => {
                     int c = FlagC ? 0x80 : 0;
                     FlagC = (tmp & 1) == 1;
-                    byte res = (byte)((tmp >> 1) | c);
+                    tmp = (byte)((tmp >> 1) | c);
                     Memory.Write(HL, tmp);
-                    FlagZ = res == 0;
+                    FlagZ = tmp == 0;
                     FlagN = false;
                     FlagH = false;
                 }
@@ -955,7 +955,7 @@ namespace Renga.Core
             _opcodeMapCB[0x43] = () => { OperationBIT(E, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x44] = () => { OperationBIT(H, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x45] = () => { OperationBIT(L, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x46] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 0); }); };
+            _opcodeMapCB[0x46] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 0); }); };
             _opcodeMapCB[0x47] = () => { OperationBIT(A, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x48] = () => { OperationBIT(B, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
@@ -964,7 +964,7 @@ namespace Renga.Core
             _opcodeMapCB[0x4B] = () => { OperationBIT(E, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x4C] = () => { OperationBIT(H, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x4D] = () => { OperationBIT(L, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x4E] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 1); }); };
+            _opcodeMapCB[0x4E] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 1); }); };
             _opcodeMapCB[0x4F] = () => { OperationBIT(A, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x50] = () => { OperationBIT(B, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
@@ -973,7 +973,7 @@ namespace Renga.Core
             _opcodeMapCB[0x53] = () => { OperationBIT(E, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x54] = () => { OperationBIT(H, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x55] = () => { OperationBIT(L, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x56] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 2); }); };
+            _opcodeMapCB[0x56] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 2); }); };
             _opcodeMapCB[0x57] = () => { OperationBIT(A, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x58] = () => { OperationBIT(B, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
@@ -982,7 +982,7 @@ namespace Renga.Core
             _opcodeMapCB[0x5B] = () => { OperationBIT(E, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x5C] = () => { OperationBIT(H, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x5D] = () => { OperationBIT(L, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x5E] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 3); }); };
+            _opcodeMapCB[0x5E] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 3); }); };
             _opcodeMapCB[0x5F] = () => { OperationBIT(A, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x60] = () => { OperationBIT(B, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
@@ -991,7 +991,7 @@ namespace Renga.Core
             _opcodeMapCB[0x63] = () => { OperationBIT(E, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x64] = () => { OperationBIT(H, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x65] = () => { OperationBIT(L, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x66] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 4); }); };
+            _opcodeMapCB[0x66] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 4); }); };
             _opcodeMapCB[0x67] = () => { OperationBIT(A, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x68] = () => { OperationBIT(B, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
@@ -1000,7 +1000,7 @@ namespace Renga.Core
             _opcodeMapCB[0x6B] = () => { OperationBIT(E, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x6C] = () => { OperationBIT(H, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x6D] = () => { OperationBIT(L, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x6E] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 5); }); };
+            _opcodeMapCB[0x6E] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 5); }); };
             _opcodeMapCB[0x6F] = () => { OperationBIT(A, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
 
 
@@ -1010,7 +1010,7 @@ namespace Renga.Core
             _opcodeMapCB[0x73] = () => { OperationBIT(E, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x74] = () => { OperationBIT(H, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x75] = () => { OperationBIT(L, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x76] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 6); }); };
+            _opcodeMapCB[0x76] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 6); }); };
             _opcodeMapCB[0x77] = () => { OperationBIT(A, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMapCB[0x78] = () => { OperationBIT(B, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
@@ -1019,7 +1019,7 @@ namespace Renga.Core
             _opcodeMapCB[0x7B] = () => { OperationBIT(E, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x7C] = () => { OperationBIT(H, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x7D] = () => { OperationBIT(L, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
-            _opcodeMapCB[0x7E] = () => { EnqueueInstructionOperations(() => { OperationBIT(FetchNextByte(), 1 << 7); }); };
+            _opcodeMapCB[0x7E] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 7); }); };
             _opcodeMapCB[0x7F] = () => { OperationBIT(A, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
