@@ -115,6 +115,8 @@ namespace Renga.Core
 
         public bool InterruptsEnabled = false;
         public byte IE = 0;
+        public byte IF = 0;
+        private byte _ifMasked { get { return (byte)(IF & IE); } }
 
         public MemoryBus Memory;
         
@@ -168,7 +170,32 @@ namespace Renga.Core
 
         public void FetchInstruction()
         {
-            // TODO: Check for interrupts
+            if(InterruptsEnabled && _ifMasked != 0)
+            {
+                byte ifMasked = _ifMasked;
+                if(ifMasked != 0)
+                {
+                    ushort routine = 0x40;
+                    byte ifBit = 1;
+                    while ((ifMasked & 1) == 0)
+                    {
+                        routine += 8;
+                        ifMasked >>= 1;
+                        ifBit <<= 1;
+                    }
+                    IF &= (byte)(~ifBit);
+                    InterruptsEnabled = false;
+                    EnqueueInstructionOperations(
+                        () => { },
+                        () => { },
+                        () => Memory.Write(--SP, (byte)(PC >> 8)),
+                        () => Memory.Write(--SP, (byte)(PC & 0xFF)),
+                        () => PC = routine
+                    );
+                    return;
+                }
+            }
+
             byte opcode = FetchNextByte();
 
 #if DEBUG

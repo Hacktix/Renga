@@ -56,6 +56,7 @@ namespace Renga.Core
         {
             switch(addr)
             {
+                case 0xFF0F: return _emu.CPU.IF;
                 case 0xFF44: return _emu.PPU.LY;
                 default:
                     return _mmio[addr & 0x7F];
@@ -85,13 +86,16 @@ namespace Renga.Core
         {
             switch(addr)
             {
-                case 0xFF50:
-                    if ((val & 1) != 0)
-                        OverlayBootrom = false;
-                    break;
                 case 0xFF02:
                     if (val == 0x81)
                         Console.Write(Encoding.ASCII.GetString(new byte[] { _mmio[1] }));
+                    break;
+                case 0xFF0F:
+                    _emu.CPU.IF = val;
+                    break;
+                case 0xFF50:
+                    if ((val & 1) != 0)
+                        OverlayBootrom = false;
                     break;
                 default:
                     _mmio[addr & 0x7F] = val;
