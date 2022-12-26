@@ -732,6 +732,27 @@ namespace Renga.Core
             _opcodeMap[0x3F] = () => { FlagN = false; FlagH = false; FlagC = !FlagC; _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0xF9] = () => { _actionQueue.Enqueue(() => SP = HL); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMap[0x27] = () =>
+            {
+                byte corr = 0;
+                bool c = false;
+                if (FlagH || (!FlagN && (A & 0xF) > 9))
+                    corr |= 0x6;
+                if(FlagC || (!FlagN && A > 0x99))
+                {
+                    corr |= 0x60;
+                    c = true;
+                }
+
+                if (FlagN) A -= corr;
+                else A += corr;
+
+                FlagC = c;
+                FlagH = false;
+                FlagZ = A == 0;
+                _actionQueue.Enqueue(FetchInstruction);
+            }; // DAA
             #endregion
 
             #region CB Instructions
