@@ -114,6 +114,7 @@ namespace Renga.Core
         }
 
         public bool InterruptsEnabled = false;
+        public bool Halted = false;
         public byte IE = 0;
         public byte IF = 0;
         private byte _ifMasked { get { return (byte)(IF & IE); } }
@@ -170,6 +171,17 @@ namespace Renga.Core
 
         public void FetchInstruction()
         {
+            if (Halted)
+            {
+                if (_ifMasked != 0)
+                    Halted = false;
+                else
+                {
+                    _actionQueue.Enqueue(FetchInstruction);
+                    return;
+                }
+            }
+
             if(InterruptsEnabled && _ifMasked != 0)
             {
                 byte ifMasked = _ifMasked;
@@ -770,6 +782,7 @@ namespace Renga.Core
 
             _opcodeMap[0xF3] = () => { InterruptsEnabled = false; _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0xFB] = () => _actionQueue.Enqueue(() => { FetchInstruction(); InterruptsEnabled = true; });
+            _opcodeMap[0x76] = () => { Halted = true; _actionQueue.Enqueue(FetchInstruction); };
 
             _opcodeMap[0x07] = () => { FlagZ = false; FlagN = false; FlagH = false; int r = A >> 7; FlagC = (A & 0x80) == 0x80; A = (byte)((A << 1) | r); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMap[0x0F] = () => { FlagZ = false; FlagN = false; FlagH = false; int r = (A << 7) & 0xFF; FlagC = (A & 1) == 1; A = (byte)((A >> 1) | r); _actionQueue.Enqueue(FetchInstruction); };
