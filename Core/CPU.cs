@@ -288,6 +288,18 @@ namespace Renga.Core
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private byte OperationRES(byte regValue, byte bitmask)
+        {
+            return (byte)(regValue & (~bitmask));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private byte OperationSET(byte regValue, byte bitmask)
+        {
+            return (byte)(regValue | bitmask);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OperationJR(bool condition)
         {
             if(!condition)
@@ -1021,6 +1033,154 @@ namespace Renga.Core
             _opcodeMapCB[0x7D] = () => { OperationBIT(L, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
             _opcodeMapCB[0x7E] = () => { EnqueueInstructionOperations(() => { OperationBIT(Memory.Read(HL), 1 << 7); }); };
             _opcodeMapCB[0x7F] = () => { OperationBIT(A, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
+            #region RES
+            _opcodeMapCB[0x80] = () => { B = OperationRES(B, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x81] = () => { C = OperationRES(C, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x82] = () => { D = OperationRES(D, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x83] = () => { E = OperationRES(E, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x84] = () => { H = OperationRES(H, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x85] = () => { L = OperationRES(L, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x86] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 0))); };
+            _opcodeMapCB[0x87] = () => { A = OperationRES(A, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0x88] = () => { B = OperationRES(B, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x89] = () => { C = OperationRES(C, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x8A] = () => { D = OperationRES(D, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x8B] = () => { E = OperationRES(E, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x8C] = () => { H = OperationRES(H, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x8D] = () => { L = OperationRES(L, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x8E] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 1))); };
+            _opcodeMapCB[0x8F] = () => { A = OperationRES(A, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0x90] = () => { B = OperationRES(B, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x91] = () => { C = OperationRES(C, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x92] = () => { D = OperationRES(D, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x93] = () => { E = OperationRES(E, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x94] = () => { H = OperationRES(H, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x95] = () => { L = OperationRES(L, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x96] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 2))); };
+            _opcodeMapCB[0x97] = () => { A = OperationRES(A, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0x98] = () => { B = OperationRES(B, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x99] = () => { C = OperationRES(C, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x9A] = () => { D = OperationRES(D, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x9B] = () => { E = OperationRES(E, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x9C] = () => { H = OperationRES(H, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x9D] = () => { L = OperationRES(L, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0x9E] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 3))); };
+            _opcodeMapCB[0x9F] = () => { A = OperationRES(A, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xA0] = () => { B = OperationRES(B, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA1] = () => { C = OperationRES(C, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA2] = () => { D = OperationRES(D, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA3] = () => { E = OperationRES(E, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA4] = () => { H = OperationRES(H, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA5] = () => { L = OperationRES(L, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 4))); };
+            _opcodeMapCB[0xA7] = () => { A = OperationRES(A, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xA8] = () => { B = OperationRES(B, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xA9] = () => { C = OperationRES(C, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xAA] = () => { D = OperationRES(D, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xAB] = () => { E = OperationRES(E, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xAC] = () => { H = OperationRES(H, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xAD] = () => { L = OperationRES(L, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xAE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 5))); };
+            _opcodeMapCB[0xAF] = () => { A = OperationRES(A, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xB0] = () => { B = OperationRES(B, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB1] = () => { C = OperationRES(C, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB2] = () => { D = OperationRES(D, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB3] = () => { E = OperationRES(E, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB4] = () => { H = OperationRES(H, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB5] = () => { L = OperationRES(L, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 6))); };
+            _opcodeMapCB[0xB7] = () => { A = OperationRES(A, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xB8] = () => { B = OperationRES(B, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xB9] = () => { C = OperationRES(C, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xBA] = () => { D = OperationRES(D, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xBB] = () => { E = OperationRES(E, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xBC] = () => { H = OperationRES(H, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xBD] = () => { L = OperationRES(L, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xBE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationRES(tmp, 1 << 7))); };
+            _opcodeMapCB[0xBF] = () => { A = OperationRES(A, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            #endregion
+
+            #region SET
+            _opcodeMapCB[0xC0] = () => { B = OperationSET(B, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC1] = () => { C = OperationSET(C, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC2] = () => { D = OperationSET(D, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC3] = () => { E = OperationSET(E, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC4] = () => { H = OperationSET(H, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC5] = () => { L = OperationSET(L, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 0))); };
+            _opcodeMapCB[0xC7] = () => { A = OperationSET(A, 1 << 0); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xC8] = () => { B = OperationSET(B, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xC9] = () => { C = OperationSET(C, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xCA] = () => { D = OperationSET(D, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xCB] = () => { E = OperationSET(E, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xCC] = () => { H = OperationSET(H, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xCD] = () => { L = OperationSET(L, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xCE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 1))); };
+            _opcodeMapCB[0xCF] = () => { A = OperationSET(A, 1 << 1); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xD0] = () => { B = OperationSET(B, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD1] = () => { C = OperationSET(C, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD2] = () => { D = OperationSET(D, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD3] = () => { E = OperationSET(E, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD4] = () => { H = OperationSET(H, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD5] = () => { L = OperationSET(L, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 2))); };
+            _opcodeMapCB[0xD7] = () => { A = OperationSET(A, 1 << 2); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xD8] = () => { B = OperationSET(B, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xD9] = () => { C = OperationSET(C, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xDA] = () => { D = OperationSET(D, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xDB] = () => { E = OperationSET(E, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xDC] = () => { H = OperationSET(H, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xDD] = () => { L = OperationSET(L, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xDE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 3))); };
+            _opcodeMapCB[0xDF] = () => { A = OperationSET(A, 1 << 3); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xE0] = () => { B = OperationSET(B, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE1] = () => { C = OperationSET(C, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE2] = () => { D = OperationSET(D, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE3] = () => { E = OperationSET(E, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE4] = () => { H = OperationSET(H, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE5] = () => { L = OperationSET(L, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 4))); };
+            _opcodeMapCB[0xE7] = () => { A = OperationSET(A, 1 << 4); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xE8] = () => { B = OperationSET(B, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xE9] = () => { C = OperationSET(C, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xEA] = () => { D = OperationSET(D, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xEB] = () => { E = OperationSET(E, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xEC] = () => { H = OperationSET(H, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xED] = () => { L = OperationSET(L, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xEE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 5))); };
+            _opcodeMapCB[0xEF] = () => { A = OperationSET(A, 1 << 5); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xF0] = () => { B = OperationSET(B, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF1] = () => { C = OperationSET(C, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF2] = () => { D = OperationSET(D, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF3] = () => { E = OperationSET(E, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF4] = () => { H = OperationSET(H, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF5] = () => { L = OperationSET(L, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF6] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 6))); };
+            _opcodeMapCB[0xF7] = () => { A = OperationSET(A, 1 << 6); _actionQueue.Enqueue(FetchInstruction); };
+
+            _opcodeMapCB[0xF8] = () => { B = OperationSET(B, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xF9] = () => { C = OperationSET(C, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xFA] = () => { D = OperationSET(D, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xFB] = () => { E = OperationSET(E, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xFC] = () => { H = OperationSET(H, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xFD] = () => { L = OperationSET(L, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
+            _opcodeMapCB[0xFE] = () => { byte tmp = 0; EnqueueInstructionOperations(() => tmp = Memory.Read(HL), () => Memory.Write(HL, OperationSET(tmp, 1 << 7))); };
+            _opcodeMapCB[0xFF] = () => { A = OperationSET(A, 1 << 7); _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #endregion
