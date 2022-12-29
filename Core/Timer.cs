@@ -45,7 +45,7 @@ namespace Renga.Core
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CheckIncrement()
         {
-            int divCheckBit = (TAC & 0b11) == 0 ? 0 : ((TAC & 0b11) * 2 + 1);
+            int divCheckBit = (TAC & 0b11) == 0 ? 9 : ((TAC & 0b11) * 2 + 1);
             bool divBitSet = (DIV & (1 << divCheckBit)) != 0;
             bool tacBitSet = (TAC & 4) != 0;
             bool edgeCheck = divBitSet && tacBitSet;

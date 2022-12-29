@@ -350,7 +350,6 @@ namespace Renga.Core
                 sbyte offset = 0;
                 EnqueueInstructionOperations(
                     () => offset = (sbyte)FetchNextByte(),
-                    () => { },
                     () => PC = (ushort)(PC + offset)
                 );
             }
