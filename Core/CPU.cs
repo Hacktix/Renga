@@ -712,20 +712,16 @@ namespace Renga.Core
 
             #region 16-bit ALU
             _opcodeMap[0x09] = () => EnqueueInstructionOperations(
-                () => { FlagN = false; FlagC = (HL + BC) > 0xFFFF; FlagH = ((HL & 0xFFF) + (BC & 0xFFF)) > 0xFFF; },
-                () => HL += BC
+                () => { FlagN = false; FlagC = (HL + BC) > 0xFFFF; FlagH = ((HL & 0xFFF) + (BC & 0xFFF)) > 0xFFF; HL += BC; }
             );
             _opcodeMap[0x19] = () => EnqueueInstructionOperations(
-                () => { FlagN = false; FlagC = (HL + DE) > 0xFFFF; FlagH = ((HL & 0xFFF) + (DE & 0xFFF)) > 0xFFF; },
-                () => HL += DE
+                () => { FlagN = false; FlagC = (HL + DE) > 0xFFFF; FlagH = ((HL & 0xFFF) + (DE & 0xFFF)) > 0xFFF; HL += DE; }
             );
             _opcodeMap[0x29] = () => EnqueueInstructionOperations(
-                () => { FlagN = false; FlagC = (HL + HL) > 0xFFFF; FlagH = ((HL & 0xFFF) + (HL & 0xFFF)) > 0xFFF; },
-                () => HL += HL
+                () => { FlagN = false; FlagC = (HL + HL) > 0xFFFF; FlagH = ((HL & 0xFFF) + (HL & 0xFFF)) > 0xFFF; HL += HL; }
             );
             _opcodeMap[0x39] = () => EnqueueInstructionOperations(
-                () => { FlagN = false; FlagC = (HL + SP) > 0xFFFF; FlagH = ((HL & 0xFFF) + (SP & 0xFFF)) > 0xFFF; },
-                () => HL += SP
+                () => { FlagN = false; FlagC = (HL + SP) > 0xFFFF; FlagH = ((HL & 0xFFF) + (SP & 0xFFF)) > 0xFFF; HL += SP; }
             );
 
             _opcodeMap[0xE8] = () => { sbyte e = 0; EnqueueInstructionOperations(
