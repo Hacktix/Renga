@@ -810,6 +810,8 @@ namespace Renga.Core
                 FlagZ = A == 0;
                 _actionQueue.Enqueue(FetchInstruction);
             }; // DAA
+
+            _opcodeMap[0x10] = () => { Renga.Log.Warning("Hit STOP Instruction."); _actionQueue.Enqueue(FetchInstruction); };
             #endregion
 
             #region CB Instructions

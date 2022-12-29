@@ -15,8 +15,6 @@ namespace Renga.Core
 
         private Emulator _emu;
 
-        private byte[] _mmio = new byte[0x80];
-
         public MemoryBus(Emulator emu, byte[] rom)
         {
             _emu = emu;
@@ -64,7 +62,7 @@ namespace Renga.Core
                 case 0xFF0F: return _emu.CPU.IF;
                 case 0xFF44: return _emu.PPU.LY;
                 default:
-                    return _mmio[addr & 0x7F];
+                    return 0xFF;
             }
         }
 
@@ -91,9 +89,8 @@ namespace Renga.Core
         {
             switch(addr)
             {
-                case 0xFF02:
-                    if (val == 0x81)
-                        Console.Write(Encoding.ASCII.GetString(new byte[] { _mmio[1] }));
+                case 0xFF01:
+                    Console.Write(Encoding.ASCII.GetString(new byte[] { val }));
                     break;
                 case 0xFF04:
                 case 0xFF05:
@@ -107,9 +104,6 @@ namespace Renga.Core
                 case 0xFF50:
                     if ((val & 1) != 0)
                         OverlayBootrom = false;
-                    break;
-                default:
-                    _mmio[addr & 0x7F] = val;
                     break;
             }
         }
