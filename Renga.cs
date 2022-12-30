@@ -17,10 +17,23 @@ namespace Renga
 
         public static string? ErrorString;
 
+        private RenderTarget Frame;
+        private Vector2 FrameScale;
+
         public Renga() : base(new(false, false))
         {
             Window.FilesDropped += WindowOnFilesDropped;
             Window.Title = "れんが";
+
+            int sizeX = (int)Config.GetProperty("scale", 3L) * 160;
+            int sizeY = (int)Config.GetProperty("scale", 3L) * 144;
+            Window.Size = new System.Drawing.Size(sizeX, sizeY);
+
+            Frame = new RenderTarget(160, 144);
+            Frame.FilteringMode = TextureFilteringMode.NearestNeighbor;
+            FrameScale = new Vector2(Window.Width / 160f, Window.Height / 144f);
+
+            Graphics.VerticalSyncMode = VerticalSyncMode.None;
         }
 
         public Renga(string[] args) : this()
@@ -60,10 +73,10 @@ namespace Renga
 
 
 
-        protected override void Update(float delta)
+        protected override void FixedUpdate(float delta)
         {
-            base.Update(delta);
             UpdateWindowTitle();
+            _emu?.Tick(delta);
         }
 
         protected override void Draw(RenderContext context)
@@ -73,7 +86,17 @@ namespace Renga
             if (ErrorString != null)
                 context.DrawString($"Oops, Renga crashed!\n\nError:\n{ErrorString}", new Vector2(10, 10), Color.Red);
 
-            try { _emu?.TickFrame(); }
+            try {
+                if(_emu != null)
+                {
+                    context.RenderTo(Frame, () =>
+                    {
+                        for(int i = 0; i < _emu.PPU.Pixels.Length; i++)
+                            context.Pixel(i % 161, i / 161, _emu.PPU.Pixels[i]);
+                    });
+                    context.DrawTexture(Frame, Vector2.Zero, FrameScale);
+                }
+            }
             catch(Exception e) {
                 _emu = null;
                 ErrorString = e.Message;

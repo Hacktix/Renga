@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chroma.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,6 +10,8 @@ namespace Renga.Core
 {
     internal class PPU
     {
+        public Color[] Pixels = new Color[160 * 144];
+
         public byte[] VRAM = new byte[0x2000];
         public byte LY = 144;
 

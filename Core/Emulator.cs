@@ -7,7 +7,7 @@
         public readonly PPU PPU;
         public readonly Timer Timer;
 
-        public static readonly int TicksPerFrame = 70224;
+        public static readonly int TicksPerSecond = 4194304;
 
         public Emulator(string romPath) {
             byte[] romContents = File.ReadAllBytes(romPath);
@@ -24,9 +24,10 @@
             Timer = new Timer(this);
         }
 
-        public void TickFrame()
+        public void Tick(float delta)
         {
-            for(int i = 0; i < TicksPerFrame; i++)
+            int ticks = (int)Math.Round(delta * TicksPerSecond);
+            for(int i = 0; i < ticks; i++)
             {
                 if ((i & 0b11) == 0)
                 {
