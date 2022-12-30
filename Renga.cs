@@ -92,7 +92,7 @@ namespace Renga
                     context.RenderTo(Frame, () =>
                     {
                         for(int i = 0; i < _emu.PPU.Pixels.Length; i++)
-                            context.Pixel(i % 161, i / 161, _emu.PPU.Pixels[i]);
+                            context.Pixel(i % 160, i / 160, _emu.PPU.Pixels[i]);
                     });
                     context.DrawTexture(Frame, Vector2.Zero, FrameScale);
                 }

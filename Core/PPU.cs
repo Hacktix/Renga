@@ -8,26 +8,300 @@ using System.Threading.Tasks;
 
 namespace Renga.Core
 {
+    public enum FetcherState
+    {
+        FetchTileNo = 0,
+        FetchDataLo = 1,
+        FetchDataHi = 2,
+        Push = 3
+    }
+
+    public enum PPUMode
+    {
+        HBlank = 0,
+        VBlank = 1,
+        OAMScan = 2,
+        Rendering = 3
+    }
+
+    public enum TileDataMethod
+    {
+        Base8000,
+        Base8800
+    }
+
     internal class PPU
     {
         public Color[] Pixels = new Color[160 * 144];
 
         public byte[] VRAM = new byte[0x2000];
-        public byte LY = 144;
+        public byte[] OAM = new byte[0xA0];
 
+        // LCDC
+        public byte LCDC
+        {
+            get
+            {
+                return (byte)(
+                    (EnablePPU ? 0x80 : 0) |
+                    (WindowTilemapBase == 0x1800 ? 0x40 : 0) |
+                    (EnableWindow ? 0x20 : 0) |
+                    (DataFetchMethod == TileDataMethod.Base8800 ? 0x10 : 0) |
+                    (BackgroundTilemapBase == 0x1800 ? 0x08 : 0) |
+                    (TallSprites ? 0x04 : 0) |
+                    (EnableSprites ? 0x02 : 0) |
+                    (EnableBackground ? 0x01 : 0));
+            }
+            set
+            {
+                EnablePPU = (value & 0x80) != 0;
+                WindowTilemapBase = (ushort)((value & 0x40) == 0 ? 0x1800 : 0x1C00);
+                EnableWindow = (value & 0x20) != 0;
+                DataFetchMethod = (value & 0x10) == 0 ? TileDataMethod.Base8800 : TileDataMethod.Base8000;
+                BackgroundTilemapBase = (ushort)((value & 0x08) == 0 ? 0x1800 : 0x1C00);
+                TallSprites = (value & 0x04) != 0;
+                EnableSprites = (value & 0x02) != 0;
+                EnableBackground = (value & 0x01) != 0;
+            }
+        }
+        public bool EnablePPU = false;
+        public ushort WindowTilemapBase = 0x1800;
+        public bool EnableWindow = false;
+        public TileDataMethod DataFetchMethod = TileDataMethod.Base8800;
+        public ushort BackgroundTilemapBase = 0x1800;
+        public bool TallSprites = false;
+        public bool EnableSprites = false;
+        public bool EnableBackground = false;
+
+        // STAT
+        public byte STAT
+        {
+            get
+            {
+                return (byte)(0x80 |
+                    (EnableInterruptLYC ? 0x40 : 0) |
+                    (EnableInterruptMode2 ? 0x20 : 0) |
+                    (EnableInterruptMode1 ? 0x10 : 0) |
+                    (EnableInterruptMode0 ? 0x08 : 0) |
+                    (FlagLYC ? 0x40 : 0) |
+                    (int)Mode
+                );
+            }
+
+            set
+            {
+                EnableInterruptLYC = (value & 0x40) != 0;
+                EnableInterruptMode2 = (value & 0x20) != 0;
+                EnableInterruptMode1 = (value & 0x10) != 0;
+                EnableInterruptMode0 = (value & 0x08) != 0;
+            }
+        }
+        public bool EnableInterruptLYC = false;
+        public bool EnableInterruptMode2 = false;
+        public bool EnableInterruptMode1 = false;
+        public bool EnableInterruptMode0 = false;
+        public bool FlagLYC { get { return LYC == LY; } }
+        public PPUMode Mode = PPUMode.HBlank;
+
+        public byte SCX = 0;
+        public byte SCY = 0;
+        public byte LY = 0;
+        public byte LYC = 0;
+        public byte WX = 0;
+        public byte WY = 0;
+
+        private int _tileX = 0;
+        private int _lx = 0;
+        private int _pix = 0;
+        private int _cycle = 0;
+
+        private Queue<Color> _bgFifo = new Queue<Color>();
+        private bool _initFetch = false;
+        private FetcherState _fetcherState = FetcherState.FetchTileNo;
+        private byte _tileNo = 0;
+        private byte _tileDataLo = 0;
+        private byte _tileDataHi = 0;
+
+        private Color[] _palette = new Color[]
+        {
+            new Color(255, 255, 255),
+            new Color(200, 200, 200),
+            new Color(100, 100, 100),
+            new Color(0, 0, 0)
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadVRAM(ushort addr)
         {
             return VRAM[addr & 0x1FFF];
         }
 
-        public void WriteVRAM(ushort addr, byte value) {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteVRAM(ushort addr, byte value)
+        {
             VRAM[addr & 0x1FFF] = value;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadOAM(ushort addr)
+        {
+            return OAM[addr % 0xA0];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteOAM(ushort addr, byte value)
+        {
+            OAM[addr % 0xA0] = value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadRegister(ushort addr)
+        {
+            switch(addr)
+            {
+                case 0xFF40: return LCDC;
+                case 0xFF41: return STAT;
+                case 0xFF42: return SCY;
+                case 0xFF43: return SCX;
+                case 0xFF44: return LY;
+                case 0xFF45: return LYC;
+                case 0xFF4A: return WY;
+                case 0xFF4B: return WX;
+                default:
+                    Renga.Log.Warning($"Read from unknown PPU Register ${addr:X4}");
+                    return 0xFF;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteRegister(ushort addr, byte value)
+        {
+            switch(addr)
+            {
+                case 0xFF40: LCDC = value; return;
+                case 0xFF41: STAT = value; return;
+                case 0xFF42: SCY = value; return;
+                case 0xFF43: SCX = value; return;
+                case 0xFF44: return;
+                case 0xFF45: LYC = value; return;
+                case 0xFF4A: WY = value; return;
+                case 0xFF4B: WX = value; return;
+                default:
+                    Renga.Log.Warning($"Wrote ${value:X2} to unknown PPU Register ${addr:X4}");
+                    return;
+            }
+        }
+
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Tick()
         {
+            if ((LCDC & (1 << 7)) == 0)
+                return;
 
+            if(LY >= 144)
+            {
+                if(++_cycle == 456)
+                {
+                    if(++LY == 154)
+                        LY = 0;
+                    _cycle = 0;
+                }
+                return;
+            }
+
+            if(_cycle == 0)
+            {
+                Mode = PPUMode.OAMScan;
+                // Do OAM Scan Here
+            }
+
+            if(_cycle < 80)
+            {
+                _cycle++;
+                return;
+            }
+
+            if(_lx < 160)
+            {
+                Mode = PPUMode.Rendering;
+
+                switch(_fetcherState)
+                {
+                    case FetcherState.FetchTileNo:
+                        int tileNoOffset = (
+                            _tileX
+                            + ((SCX / 8) & 0x1F)
+                            + 32 * (((LY + SCY) & 0xFF) / 8)
+                        ) & 0x3FF;
+                        _tileNo = VRAM[BackgroundTilemapBase + tileNoOffset];
+                        _fetcherState = FetcherState.FetchDataLo;
+                        break;
+
+                    case FetcherState.FetchDataLo:
+                        int tileDataLoAddr = DataFetchMethod == TileDataMethod.Base8000
+                            ? 16 * _tileNo
+                            : 0x1000 + 16 * (sbyte)_tileNo;
+                        tileDataLoAddr += 2 * ((LY + SCY) & 7);
+                        _tileDataLo = VRAM[tileDataLoAddr];
+                        _fetcherState = FetcherState.FetchDataHi;
+                        break;
+
+                    case FetcherState.FetchDataHi:
+                        int tileDataHiAddr = DataFetchMethod == TileDataMethod.Base8000
+                            ? 16 * _tileNo
+                            : 0x1000 + 16 * (sbyte)_tileNo;
+                        tileDataHiAddr += 2 * ((LY + SCY) & 7) + 1;
+                        _tileDataHi = VRAM[tileDataHiAddr];
+                        if(!_initFetch)
+                        {
+                            _initFetch = true;
+                            _fetcherState = FetcherState.FetchTileNo;
+                        }
+                        else
+                            _fetcherState = FetcherState.Push;
+                        break;
+
+                    case FetcherState.Push:
+                        if (_bgFifo.Count != 0)
+                            break;
+
+                        _tileX++;
+                        for(int bit = 7; bit >= 0; bit--)
+                        {
+                            int colorIndex =
+                                (((_tileDataHi >> bit) & 1) << 1) |
+                                ((_tileDataLo >> bit) & 1);
+                            _bgFifo.Enqueue(_palette[colorIndex]);
+                        }
+                        _fetcherState = FetcherState.FetchTileNo;
+                        break;
+                }
+
+                if(_bgFifo.Count != 0)
+                {
+                    Pixels[_pix++] = _bgFifo.Dequeue();
+                    _lx++;
+                }
+            }
+            else
+                Mode = PPUMode.HBlank;
+
+            if (++_cycle == 456)
+            {
+                if(++LY == 144)
+                {
+                    Mode = PPUMode.VBlank;
+                    _pix = 0;
+                }
+                _tileX = 0;
+                _lx = 0;
+                _initFetch = false;
+                _bgFifo.Clear();
+                _cycle = 0;
+                _fetcherState = FetcherState.FetchTileNo;
+            }
         }
     }
 }
