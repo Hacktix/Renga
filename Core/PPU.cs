@@ -256,8 +256,7 @@ namespace Renga.Core
                         if ((_cycle & 1) != 0)
                             break;
                         int tileNoOffset = (
-                            _tileX
-                            + ((SCX / 8) & 0x1F)
+                            ((_tileX + (SCX / 8)) & 0x1F)
                             + 32 * (((LY + SCY) & 0xFF) / 8)
                         ) & 0x3FF;
                         _tileNo = VRAM[BackgroundTilemapBase + tileNoOffset];
