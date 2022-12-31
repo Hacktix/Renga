@@ -67,6 +67,9 @@ namespace Renga.Core
                 case 0xFF43:
                 case 0xFF44:
                 case 0xFF45:
+                case 0xFF47:
+                case 0xFF48:
+                case 0xFF49:
                 case 0xFF4A:
                 case 0xFF4B:
                     return _emu.PPU.ReadRegister(addr);
@@ -118,6 +121,9 @@ namespace Renga.Core
                 case 0xFF43:
                 case 0xFF44:
                 case 0xFF45:
+                case 0xFF47:
+                case 0xFF48:
+                case 0xFF49:
                 case 0xFF4A:
                 case 0xFF4B:
                     _emu.PPU.WriteRegister(addr, val);

@@ -122,13 +122,34 @@ namespace Renga.Core
         private byte _tileDataLo = 0;
         private byte _tileDataHi = 0;
 
-        private Color[] _palette = new Color[]
+        // DMG Palette
+        public static readonly Color[] DMGPalette = new Color[]
         {
-            new Color(255, 255, 255),
-            new Color(200, 200, 200),
-            new Color(100, 100, 100),
-            new Color(0, 0, 0)
+            System.Drawing.ColorTranslator.FromHtml(Renga.Config.GetProperty("dmgColor1", "#9BBC0F")),
+            System.Drawing.ColorTranslator.FromHtml(Renga.Config.GetProperty("dmgColor2", "#8BAC0F")),
+            System.Drawing.ColorTranslator.FromHtml(Renga.Config.GetProperty("dmgColor3", "#306230")),
+            System.Drawing.ColorTranslator.FromHtml(Renga.Config.GetProperty("dmgColor4", "#0F380F")),
         };
+        private int[] _palette = new int[] { 0, 1, 2, 3 };
+        public byte BGP
+        {
+            get
+            {
+                return (byte)(
+                    ((_palette[0] & 0b11) << 0) |
+                    ((_palette[1] & 0b11) << 2) |
+                    ((_palette[2] & 0b11) << 4) |
+                    ((_palette[3] & 0b11) << 6)
+                );
+            }
+            set
+            {
+                _palette[0] = (value & 0b00000011) >> 0;
+                _palette[1] = (value & 0b00001100) >> 2;
+                _palette[2] = (value & 0b00110000) >> 4;
+                _palette[3] = (value & 0b11000000) >> 6;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadVRAM(ushort addr)
@@ -165,6 +186,7 @@ namespace Renga.Core
                 case 0xFF43: return SCX;
                 case 0xFF44: return LY;
                 case 0xFF45: return LYC;
+                case 0xFF47: return BGP;
                 case 0xFF4A: return WY;
                 case 0xFF4B: return WX;
                 default:
@@ -184,6 +206,7 @@ namespace Renga.Core
                 case 0xFF43: SCX = value; return;
                 case 0xFF44: return;
                 case 0xFF45: LYC = value; return;
+                case 0xFF47: BGP = value; return;
                 case 0xFF4A: WY = value; return;
                 case 0xFF4B: WX = value; return;
                 default:
@@ -230,6 +253,8 @@ namespace Renga.Core
                 switch(_fetcherState)
                 {
                     case FetcherState.FetchTileNo:
+                        if ((_cycle & 1) != 0)
+                            break;
                         int tileNoOffset = (
                             _tileX
                             + ((SCX / 8) & 0x1F)
@@ -240,6 +265,8 @@ namespace Renga.Core
                         break;
 
                     case FetcherState.FetchDataLo:
+                        if ((_cycle & 1) != 0)
+                            break;
                         int tileDataLoAddr = DataFetchMethod == TileDataMethod.Base8000
                             ? 16 * _tileNo
                             : 0x1000 + 16 * (sbyte)_tileNo;
@@ -249,6 +276,8 @@ namespace Renga.Core
                         break;
 
                     case FetcherState.FetchDataHi:
+                        if ((_cycle & 1) != 0)
+                            break;
                         int tileDataHiAddr = DataFetchMethod == TileDataMethod.Base8000
                             ? 16 * _tileNo
                             : 0x1000 + 16 * (sbyte)_tileNo;
@@ -273,7 +302,10 @@ namespace Renga.Core
                             int colorIndex =
                                 (((_tileDataHi >> bit) & 1) << 1) |
                                 ((_tileDataLo >> bit) & 1);
-                            _bgFifo.Enqueue(_palette[colorIndex]);
+                            if (EnableBackground)
+                                _bgFifo.Enqueue(DMGPalette[_palette[colorIndex]]);
+                            else
+                                _bgFifo.Enqueue(DMGPalette[0]);
                         }
                         _fetcherState = FetcherState.FetchTileNo;
                         break;
