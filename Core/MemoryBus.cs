@@ -41,7 +41,7 @@ namespace Renga.Core
             if (addr < 0xC000) return Cartridge.MBC.Read(addr);
             if (addr < 0xFE00) return WRAM.Read(addr);
             if (addr < 0xFEA0) return _emu.PPU.ReadOAM(addr);
-            if (addr < 0xFEFF) throw new NotImplementedException($"Read from unimplemented unusable address 0x{addr:X4}");
+            if (addr < 0xFEFF) Renga.Log.Warning($"Read from unusable address 0x{addr:X4}");
             if (addr < 0xFF80) return ReadMMIO(addr);
             if (addr < 0xFFFE) return HRAM.Read(addr);
 
@@ -89,7 +89,7 @@ namespace Renga.Core
             if (addr < 0xC000) { Cartridge.MBC.Write(addr, val); return; }
             if (addr < 0xFE00) { WRAM.Write(addr, val); return; }
             if (addr < 0xFEA0) { _emu.PPU.WriteOAM(addr, val); return; }
-            if (addr < 0xFEFF) throw new NotImplementedException($"Write 0x{val:X2} to unimplemented unusable address 0x{addr:X4}");
+            if (addr < 0xFEFF) Renga.Log.Warning($"Write 0x{val:X2} to unusable address 0x{addr:X4}");
             if (addr < 0xFF80) { WriteMMIO(addr, val); return; }
             if (addr < 0xFFFE) { HRAM.Write(addr, val); return; }
 
@@ -101,9 +101,6 @@ namespace Renga.Core
         {
             switch(addr)
             {
-                case 0xFF01:
-                    Console.Write(Encoding.ASCII.GetString(new byte[] { val }));
-                    break;
                 case 0xFF04:
                 case 0xFF05:
                 case 0xFF06:

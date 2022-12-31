@@ -44,10 +44,10 @@ namespace Renga.Core
             {
                 return (byte)(
                     (EnablePPU ? 0x80 : 0) |
-                    (WindowTilemapBase == 0x1800 ? 0x40 : 0) |
+                    (WindowTilemapBase == 0x1C00 ? 0x40 : 0) |
                     (EnableWindow ? 0x20 : 0) |
-                    (DataFetchMethod == TileDataMethod.Base8800 ? 0x10 : 0) |
-                    (BackgroundTilemapBase == 0x1800 ? 0x08 : 0) |
+                    (DataFetchMethod == TileDataMethod.Base8000 ? 0x10 : 0) |
+                    (BackgroundTilemapBase == 0x1C00 ? 0x08 : 0) |
                     (TallSprites ? 0x04 : 0) |
                     (EnableSprites ? 0x02 : 0) |
                     (EnableBackground ? 0x01 : 0));
@@ -102,6 +102,7 @@ namespace Renga.Core
         public bool EnableInterruptMode0 = false;
         public bool FlagLYC { get { return LYC == LY; } }
         public PPUMode Mode = PPUMode.HBlank;
+        private bool _lastStateSTAT = false;
 
         public byte SCX = 0;
         public byte SCY = 0;
@@ -150,6 +151,16 @@ namespace Renga.Core
                 _palette[3] = (value & 0b11000000) >> 6;
             }
         }
+
+
+
+        private Emulator _emu;
+        public PPU(Emulator emu)
+        {
+            _emu = emu;
+        }
+
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadVRAM(ushort addr)
@@ -223,94 +234,120 @@ namespace Renga.Core
             if ((LCDC & (1 << 7)) == 0)
                 return;
 
-            if(LY >= 144)
+            TickPPU();
+            CheckSTAT();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void CheckSTAT()
+        {
+            bool statIntr =
+                (EnableInterruptMode2 && Mode == PPUMode.OAMScan) ||
+                (EnableInterruptMode1 && Mode == PPUMode.VBlank) ||
+                (EnableInterruptMode0 && Mode == PPUMode.HBlank) ||
+                (EnableInterruptLYC && LY == LYC);
+
+            if (!_lastStateSTAT && statIntr)
             {
-                if(++_cycle == 456)
+                _emu.CPU.IF |= 0b10;
+            }
+            _lastStateSTAT = statIntr;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void TickPPU()
+        {
+            if (LY >= 144)
+            {
+                if (++_cycle == 456)
                 {
-                    if(++LY == 154)
+                    if (++LY == 154)
                         LY = 0;
                     _cycle = 0;
                 }
                 return;
             }
 
-            if(_cycle == 0)
+            if (_cycle == 0)
             {
                 Mode = PPUMode.OAMScan;
                 // Do OAM Scan Here
             }
 
-            if(_cycle < 80)
+            if (_cycle < 80)
             {
                 _cycle++;
                 return;
             }
 
-            if(_lx < 160)
+            if (_lx < 160)
             {
                 Mode = PPUMode.Rendering;
 
-                switch(_fetcherState)
+                if(_tileX < 20)
                 {
-                    case FetcherState.FetchTileNo:
-                        if ((_cycle & 1) != 0)
-                            break;
-                        int tileNoOffset = (
-                            ((_tileX + (SCX / 8)) & 0x1F)
-                            + 32 * (((LY + SCY) & 0xFF) / 8)
-                        ) & 0x3FF;
-                        _tileNo = VRAM[BackgroundTilemapBase + tileNoOffset];
-                        _fetcherState = FetcherState.FetchDataLo;
-                        break;
-
-                    case FetcherState.FetchDataLo:
-                        if ((_cycle & 1) != 0)
-                            break;
-                        int tileDataLoAddr = DataFetchMethod == TileDataMethod.Base8000
-                            ? 16 * _tileNo
-                            : 0x1000 + 16 * (sbyte)_tileNo;
-                        tileDataLoAddr += 2 * ((LY + SCY) & 7);
-                        _tileDataLo = VRAM[tileDataLoAddr];
-                        _fetcherState = FetcherState.FetchDataHi;
-                        break;
-
-                    case FetcherState.FetchDataHi:
-                        if ((_cycle & 1) != 0)
-                            break;
-                        int tileDataHiAddr = DataFetchMethod == TileDataMethod.Base8000
-                            ? 16 * _tileNo
-                            : 0x1000 + 16 * (sbyte)_tileNo;
-                        tileDataHiAddr += 2 * ((LY + SCY) & 7) + 1;
-                        _tileDataHi = VRAM[tileDataHiAddr];
-                        if(!_initFetch)
-                        {
-                            _initFetch = true;
-                            _fetcherState = FetcherState.FetchTileNo;
-                        }
-                        else
-                            _fetcherState = FetcherState.Push;
-                        break;
-
-                    case FetcherState.Push:
-                        if (_bgFifo.Count != 0)
+                    switch (_fetcherState)
+                    {
+                        case FetcherState.FetchTileNo:
+                            if ((_cycle & 1) == 0)
+                                break;
+                            int tileNoOffset = (
+                                ((_tileX + (SCX / 8)) & 0x1F)
+                                + 32 * (((LY + SCY) & 0xFF) / 8)
+                            ) & 0x3FF;
+                            _tileNo = VRAM[BackgroundTilemapBase + tileNoOffset];
+                            _fetcherState = FetcherState.FetchDataLo;
                             break;
 
-                        _tileX++;
-                        for(int bit = 7; bit >= 0; bit--)
-                        {
-                            int colorIndex =
-                                (((_tileDataHi >> bit) & 1) << 1) |
-                                ((_tileDataLo >> bit) & 1);
-                            if (EnableBackground)
-                                _bgFifo.Enqueue(DMGPalette[_palette[colorIndex]]);
+                        case FetcherState.FetchDataLo:
+                            if ((_cycle & 1) == 0)
+                                break;
+                            int tileDataLoAddr = DataFetchMethod == TileDataMethod.Base8000
+                                ? 16 * _tileNo
+                                : 0x1000 + 16 * (sbyte)_tileNo;
+                            tileDataLoAddr += 2 * ((LY + SCY) & 7);
+                            _tileDataLo = VRAM[tileDataLoAddr];
+                            _fetcherState = FetcherState.FetchDataHi;
+                            break;
+
+                        case FetcherState.FetchDataHi:
+                            if ((_cycle & 1) == 0)
+                                break;
+                            int tileDataHiAddr = DataFetchMethod == TileDataMethod.Base8000
+                                ? 16 * _tileNo
+                                : 0x1000 + 16 * (sbyte)_tileNo;
+                            tileDataHiAddr += 2 * ((LY + SCY) & 7) + 1;
+                            _tileDataHi = VRAM[tileDataHiAddr];
+                            if (!_initFetch)
+                            {
+                                _initFetch = true;
+                                _fetcherState = FetcherState.FetchTileNo;
+                            }
                             else
-                                _bgFifo.Enqueue(DMGPalette[0]);
-                        }
-                        _fetcherState = FetcherState.FetchTileNo;
-                        break;
+                                _fetcherState = FetcherState.Push;
+                            break;
+
+                        case FetcherState.Push:
+                            if (_bgFifo.Count != 0)
+                                break;
+
+                            _tileX++;
+                            for (int bit = 7; bit >= 0; bit--)
+                            {
+                                int colorIndex =
+                                    (((_tileDataHi >> bit) & 1) << 1) |
+                                    ((_tileDataLo >> bit) & 1);
+                                if (EnableBackground)
+                                    _bgFifo.Enqueue(DMGPalette[_palette[colorIndex]]);
+                                else
+                                    _bgFifo.Enqueue(DMGPalette[0]);
+                            }
+                            _fetcherState = FetcherState.FetchTileNo;
+                            break;
+                    }
                 }
 
-                if(_bgFifo.Count != 0)
+                if (_bgFifo.Count != 0)
                 {
                     Pixels[_pix++] = _bgFifo.Dequeue();
                     _lx++;
@@ -321,10 +358,11 @@ namespace Renga.Core
 
             if (++_cycle == 456)
             {
-                if(++LY == 144)
+                if (++LY == 144)
                 {
                     Mode = PPUMode.VBlank;
                     _pix = 0;
+                    _emu.CPU.IF |= 1;
                 }
                 _tileX = 0;
                 _lx = 0;
